@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block main_content %}
+<div class="container mt-4">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="row mb-3">
+      <label for="id_category" class="col-sm-3 col-form-label">Category</label>
+      <div class="col-sm-6">
+        <input class="form-control" list="datalistOptions" placeholder="Select Category" name="category">
+        <datalist id="datalistOptions">
+          {% for category, count in category_list %}
+          <option value="{{ category }}">{{ category }} ({{ count }})</option>
+          {% endfor %}
+        </datalist>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="id_language" class="col-sm-3 col-form-label">Language</label>
+      <div class="col-sm-6">
+        <select class="form-select" name="language" id="id_language">
+          {% for name, language, count in language_list %}
+          <option value="{{ name }}">{{ language }} ({{ count }})</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="id_file" class="col-sm-3 col-form-label">ZIP File</label>
+      <div class="col-sm-6">
+        <input type="file" name="file" class="form-control" id="id_file">
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Assign</button>
+  </form>
+</div>
+{% endblock main_content %}

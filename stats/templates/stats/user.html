@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block main_content %}
+<div class="container my-2">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Last Activity</th>
+          <th>Language</th>
+          <th>Assigned Pages</th>
+          <th>Correct Pages</th>
+          <th>Skipped Pages</th>
+          <th>Total Pages</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in user_list %}
+        <tr>
+          <td>{{ user.name }}</td>
+          <td>{{ user.last_activity|naturaltime }}</td>
+          <td>{{ user.language|title|default:"N/A" }}</td>
+          <td>{{ user.assigned_count|default:"0" }}</td>
+          <td>{{ user.corrected_count|default:"0" }}</td>
+          <td>{{ user.skipped_count|default:"0" }}</td>
+          <td>{{ user.total_count|default:"0" }}</td>
+          <td>
+            <a href="{% url 'user:unassign' pk=user.pk %}" class="btn btn-warning">Unassign</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+</div>
+{% endblock main_content %}
