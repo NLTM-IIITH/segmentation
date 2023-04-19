@@ -134,3 +134,22 @@ class Word(BaseModel):
 			words[i].update_from_lsf(data_dict[ids[i]], save=False)
 		Word.objects.bulk_update(words, ['x', 'y', 'w', 'h'])
 		print('completed creating and updating new words')
+
+
+class Point(BaseModel):
+	x = models.IntegerField(default=0)
+	y = models.IntegerField(default=0)
+
+	word = models.ForeignKey(
+		'word.Word',
+		on_delete=models.CASCADE,
+	)
+
+	class Meta:
+		default_related_name = 'points'
+
+	def __str__(self) -> str:
+		return f'({self.x}, {self.y})'
+	
+	def __repr__(self) -> str:
+		return f'<Point: {str(self)}>'
