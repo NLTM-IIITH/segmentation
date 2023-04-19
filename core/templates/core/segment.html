@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block custom_js %}
+<!-- Initialize Label Studio -->
+<script>
+  function submitLabels(event) {
+    console.log('submitting');
+    document.dispatchEvent(
+      new KeyboardEvent(
+        'keydown',
+        {
+          key: "Enter",
+          which: 13,
+          keyCode: 13,
+          ctrlKey: true,
+          altKey: false,
+          metaKey: false,
+          shiftKey: false,
+        }
+      )
+    );
+  }
+  var data = JSON.parse(document.getElementById('annotations').textContent);
+  var labelStudio = new LabelStudio('label-studio', {
+    config: `
+      <View>
+        <Image name="img" value="$image"></Image>
+        <RectangleLabels name="tag" toName="img" canRotate="false">
+          <Label value="BBOX" background="#e01440" selected="true"></Label>
+        </RectangleLabels>
+      </View>
+    `,
+
+    interfaces: [
+      "panel",
+      "controls",
+      "update",
+      "submit",
+      "skip",
+      // "topbar",
+    ],
+
+    user: {
+      pk: {{ user.pk }},
+      firstName: "{{ user.first_name }}",
+      lastName: "{{ user.last_name }}"
+    },
+
+    task: {
+      annotations: [ data ],
+      id: {{ page.id }},
+      data: {
+        image: "{{ page.image.url }}"
+      }
+    },
+
+    onLabelStudioLoad: function(LS) {
+      var c = LS.annotationStore.addAnnotation({
+        userGenerate: true
+      });
+      LS.annotationStore.selectAnnotation(c.id);
+    },
+
+    onSubmitAnnotation: function(LS, annotation) {
+      console.log("annotation submitted");
+      console.log(annotation);
+    },
+
+    onUpdateAnnotation: function(LS, annotation) {
+      document.getElementById("loader").classList.remove("d-none");
+      console.log("annotation Updated");
+      console.log(annotation.serializeAnnotation());
+
+      var data = {
+        "page_id": {{ page.id }},
+        "data": annotation.serializeAnnotation(),
+      };
+      console.log(data);
+      fetch("{% url 'core:segment-save' %}", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(data)
+      }).then(response => {
+        location.reload();
+      });
+      // redirect to the next annotation image
+    },
+
+    onSkipTask: function(LS) {
+      console.log('Task skipped');
+    }
+  });
+</script>
+{% endblock %}
+
+{% block main_content %}
+{{ page.get_annotations|json_script:"annotations" }}
+<div class="container-fluid mt-2">
+  {% if page %}
+  <div class="row m-0 p-0">
+    <div class="col"> </div>
+    <div class="col text-right">
+      <a href="{% url 'core:segment-gt' %}?page_id={{ page.id }}" class="btn btn-sm btn-info">GT</a>
+    </div>
+  </div>
+  <div id="label-studio"></div>
+  <div class="row my-4 mx-2 display-5 border border-primary p-3">
+    {{ gt|safe|linebreaks }}
+  </div>
+  <div class="row mb-3">
+    <div class="col">
+      <button id="btn-submit" class="btn btn-primary" onclick="submitLabels(event);"><i id="loader" class="fa fa-spinner fa-spin d-none"></i> Submit/Update</button>
+      <a href="{% url 'core:segment-skip' %}?page_id={{ page.id }}" class="btn btn-warning ml-3">Skip</a>
+    </div>
+    <div class="col text-right">
+    </div>
+  </div>
+  <div class="mt-3">&nbsp;</div>
+  {% else %}
+  <div class="h2 mt-3">
+    <center>No Page Assigned. please contact Admin</center>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

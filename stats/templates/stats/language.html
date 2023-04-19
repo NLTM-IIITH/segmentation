@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block main_content %}
+<div class="container my-2">
+  <div class="my-3">
+    <div class="dropdown">
+      <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown"
+        aria-expanded="false">
+        {% if category %}
+        Change Category ({{ category }})
+        {% else %}
+        Filter by Category
+        {% endif %}
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+        <li><a class="dropdown-item" href="?">All</a></li>
+        {% for i, _ in category_list %}
+        <li><a class="dropdown-item {% if i == category %}active{% endif %}" href="?category={{ i }}">{{ i }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Language</th>
+        <th>New Pages</th>
+        <th>Segmented Pages</th>
+        <th>Assigned Pages</th>
+        <th>Corrected Pages</th>
+        <th>Skipped Pages</th>
+        <th>Total Pages</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for language in language_list %}
+      <tr>
+        <td>{{ language.name|title }}</td>
+        <td>{{ language.new_count|default:"0" }}</td>
+        <td>{{ language.segmented_count|default:"0" }}</td>
+        <td>{{ language.assigned_count|default:"0" }}</td>
+        <td>{{ language.corrected_count|default:"0" }}</td>
+        <td>{{ language.skipped_count|default:"0" }}</td>
+        <td>{{ language.total_count|default:"0" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock main_content %}

@@ -1,0 +1,19 @@
+{% if messages %}
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+<script>
+  $(document).ready(function() {
+    {% for message in messages %}
+    Toastify({
+      text: "{{ message }}",
+      duration: 3000,
+      className: "message-{{ message.tags }}",
+      style: {
+        background: "linear-gradient(to right, #00b09b, #96c93d)",
+      },
+      close: true,
+    }).showToast();
+    {% endfor %}
+  })
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+{% endif %}

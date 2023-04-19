@@ -1,0 +1,5 @@
+Django==4.1.5
+django-cleanup
+django-extensions
+Pillow
+tqdm
