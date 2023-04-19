@@ -115,6 +115,15 @@ class Page(BaseModel):
 		help_text='This field stores the ID or information of the source of the page'
 	)
 
+	polygon = models.BooleanField(
+		default=False,
+		help_text=(
+			'This indicates that when the page is showed for '
+			'segmentation to the user, polygon will decide whether '
+			'to show the label studio in the form of rectangle or polygons'
+		)
+	)
+
 	assigned_timestamp = models.DateTimeField(
 		default=None,
 		null=True,
