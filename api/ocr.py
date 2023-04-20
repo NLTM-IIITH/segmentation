@@ -48,7 +48,10 @@ class OCRAPI:
 		"""
 		url = 'https://ilocr.iiit.ac.in/ocr/infer'
 		images = os.listdir(folder_path)
-		images = sorted(images, key=lambda x:int(x.strip().split('.')[0]))
+		try:
+			images = sorted(images, key=lambda x:int(x.strip().split('.')[0]))
+		except:
+			images.sort()
 		images = [join(folder_path, i) for i in images if i.endswith('jpg')]
 		images = [base64.b64encode(open(i, 'rb').read()).decode() for i in images]
 		ocr_request = {

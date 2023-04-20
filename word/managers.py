@@ -1,3 +1,4 @@
+import json
 import os
 import time
 from os.path import basename, join
@@ -168,7 +169,7 @@ class WordQuerySet(BaseQuerySet):
 		tmp = TemporaryDirectory(prefix='ocr')
 		folder = tmp.name
 		parent = self.all()[0].page.parent
-		self.save_images(folder)
+		self.save_images(folder, as_id=True)
 		print('saved all the word images to the folder')
 		vocab = CrowdAPI.get_vocab(parent)
 		vocab = vocab.strip().replace('\n', ' ').strip().split(' ')
@@ -180,7 +181,7 @@ class WordQuerySet(BaseQuerySet):
 		print('completed the postprocessing API')
 
 		words = list(self.all().order_by('id'))
-		assert len(words) == len(b)
+		assert len(words) == len(b), 'Some words were lost in postprocessing API'
 		ver: list[tuple] = []
 		edit: list[tuple] = []
 

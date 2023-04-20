@@ -37,7 +37,6 @@ def send_to_verification(ver: list[tuple]):
 		('file',('test.zip',open(zip_path,'rb'),'application/zip'))
 	]
 	response = requests.post(url, data=payload, files=files)
-	# print(f'Got the response as: {response.status_code}')
 	return response.ok
 
 
@@ -58,7 +57,7 @@ def send_to_editing(ver: list[tuple]):
 		f.write('\n'.join(ret))
 	# print('added all the images and gt file to the folders')
 	zip_path = join(tmp.name, 'test.zip')
-	os.system(f'cd {tmp.name} && zip -r test.zip test/ && cd -')
+	os.system(f'cd {tmp.name} && zip -r test.zip test/ >/dev/null && cd -')
 	# print(f'created the zip file to be uploaded: {zip_path}')
 
 	# print('calling the verification upload API')

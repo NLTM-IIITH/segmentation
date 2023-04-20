@@ -177,7 +177,7 @@ class Page(BaseModel):
 
 	def send_to_verification(self):
 		ver = self.words.all().send_to_verification( # type: ignore
-			settings.PAGE_CATEGORY_VERIFICATION_MODEL[self.category]
+			settings.PAGE_CATEGORY_OCR_VERIFICATION_MODEL[self.category]
 		)
 		ver = [i.id for i in ver]
 		Word.objects.filter(id__in=ver).update(status='sent_verification')
