@@ -26,9 +26,15 @@
     config: `
       <View>
         <Image name="img" value="$image"></Image>
+        {% if page.polygon %}
+        <PolygonLabels name="tag" toName="img" canRotate="false">
+          <Label value="BBOX" background="#e01440" selected="true"></Label>
+        </PolygonLabels>
+        {% else %}
         <RectangleLabels name="tag" toName="img" canRotate="false">
           <Label value="BBOX" background="#e01440" selected="true"></Label>
         </RectangleLabels>
+        {% endif %}
       </View>
     `,
 

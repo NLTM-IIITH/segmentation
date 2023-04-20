@@ -146,3 +146,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = 'user:login'
 LOGIN_REDIRECT_URL = 'core:segment'
 LOGOUT_REDIRECT_URL = 'user:login'
+
+# Custom Page category settings
+PAGE_CATEGORY_SEGMENTATION_MODEL = {
+	'crowd_hw': 'craft',
+	'harsh_crowd_st': 'craft',
+	'testing': 'textpms'
+}
+PAGE_CATEGORY_OCR_VERIFICATION_MODEL = {
+	'Printed_9_Minor': 'v4_robust'
+}

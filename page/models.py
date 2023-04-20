@@ -2,6 +2,7 @@ from os.path import join
 from tempfile import TemporaryDirectory
 
 import cv2
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models, transaction
 from django.utils import timezone
@@ -25,16 +26,6 @@ def get_image_path(instance, filename):
 
 
 class Page(BaseModel):
-
-	CATEGORY_SEGMENTATION_MODEL = {
-		'crowd_hw': 'craft',
-		'harsh_crowd_st': 'craft',
-		'testing': 'v2_doctr'
-	}
-
-	CATEGORY_OCR_VERIFICATION_MODEL = {
-		'Printed_9_Minor': 'v4_robust'
-	}
 
 	STATUS_CHOICES = (
 		('new', 'New'),
@@ -184,7 +175,7 @@ class Page(BaseModel):
 
 	def send_to_verification(self):
 		ver = self.words.all().send_to_verification( # type: ignore
-			Page.CATEGORY_OCR_VERIFICATION_MODEL[self.category]
+			settings.PAGE_CATEGORY_VERIFICATION_MODEL[self.category]
 		)
 		ver = [i.id for i in ver]
 		Word.objects.filter(id__in=ver).update(status='sent_verification')
@@ -265,7 +256,7 @@ class Page(BaseModel):
 		self.words.all().delete() # type: ignore
 		tmp = TemporaryDirectory(prefix='layout')
 		self.save_image(tmp.name)
-		model = Page.CATEGORY_SEGMENTATION_MODEL.get(self.category, 'v2_doctr')
+		model = settings.PAGE_CATEGORY_SEGMENTATION_MODEL.get(self.category, 'v2_doctr')
 		words = LayoutAPI().fire(tmp.name, model)
 		for word in words:
 			Word.objects.from_layout_response( # type: ignore
