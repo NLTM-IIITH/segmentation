@@ -3,6 +3,7 @@ from os.path import join
 from django.contrib.auth import get_user_model
 from django.db import models
 from PIL import Image
+from tqdm import tqdm
 
 from core.models import BaseModel
 
@@ -162,18 +163,38 @@ class Word(BaseModel):
 		y2 = self.y + self.h
 		return (x1, y1, x2, y2)
 
-	def update_from_lsf(self, data, save=True):
+	def update_from_lsf(self, data, save=True) -> list[Point]:
 		"""
 		this function takes as input the data object returned by the LSF
 		for this particular word model instance.
 		"""
 		width, height = data['original_width'], data['original_height']
-		self.x = (data['value']['x'] * width) // 100
-		self.y = (data['value']['y'] * height) // 100
-		self.w = (data['value']['width'] * width) // 100
-		self.h = (data['value']['height'] * height) // 100
+		point_list = []
+		if 'points' in data['value']:
+			for point in data['value']['points']:
+				point_list.append(
+					Point(
+						word=self,
+						x=(point[0] * width) // 100,
+						y=(point[1] * height) // 100
+					)
+				)
+			x = [i.x for i in point_list] # type: ignore
+			y = [i.y for i in point_list] # type: ignore
+			self.x = min(x)
+			self.y = min(y)
+			self.w = max(x) - min(x)
+			self.h = max(y) - min(y)
+		else:
+			self.x = (data['value']['x'] * width) // 100
+			self.y = (data['value']['y'] * height) // 100
+			self.w = (data['value']['width'] * width) // 100
+			self.h = (data['value']['height'] * height) // 100
+			point_list = self.update_points(save=False)
 		if save:
+			Point.objects.bulk_create(point_list)
 			self.save()
+		return point_list
 
 	@staticmethod
 	def bulk_update_from_lsf(data, page) -> None:
@@ -189,7 +210,9 @@ class Word(BaseModel):
 		Word.objects.bulk_create(words)
 		print(f'Created {len(words)} word model placeholders')
 		words = list(Word.objects.filter(page=page))
-		for i in range(len(ids)):
-			words[i].update_from_lsf(data_dict[ids[i]], save=False)
+		points = []
+		for i in tqdm(range(len(ids)), desc='Updating Words from LSF'):
+			points += words[i].update_from_lsf(data_dict[ids[i]], save=False)
+		Point.objects.bulk_create(points)
 		Word.objects.bulk_update(words, ['x', 'y', 'w', 'h'])
 		print('completed creating and updating new words')
