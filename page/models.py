@@ -133,16 +133,18 @@ class Page(BaseModel):
 	def __repr__(self) -> str:
 		return f'<Page: {self.status.title()}>'
 
-	def assign(self, user: "User", save: bool = True): # type: ignore
+	def assign(self, user: "User", polygon: bool, save: bool = True): # type: ignore
 		"""
 		Assigns a user to this page.
 
 		Effected Fields
 		 - Page.status
+		 - Page.polygon
 		 - Page.user
 		 - Page.assigned_timestamp
 		"""
 		self.user = user
+		self.polygon = polygon
 		self.status = 'assigned'
 		self.assigned_timestamp = timezone.localtime()
 		if save:

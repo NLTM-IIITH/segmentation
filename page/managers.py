@@ -14,23 +14,24 @@ class PageQuerySet(BaseQuerySet):
 			**kwargs
 		)
 
-	def assign(self, user: 'User') -> None: # type: ignore
+	def assign(self, user: 'User', polygon: bool) -> None: # type: ignore
 		"""
 		Assigns all the pages in QuerySet to the given user
 		and updates the assigned_timstamp of all the pages.
 
 		Effected Fields:
 		 - Page.status
+		 - Page.polygon
 		 - Page.user
 		 - Page.assigned_timestamp
 		"""
 		pages = list(self.all())
 		print(f'Assigning {user} to {self.count()} pages')
 		for page in pages:
-			page.assign(user, save=False)
+			page.assign(user, polygon, save=False)
 		self.model.objects.bulk_update(
 			pages,
-			('user', 'assigned_timestamp', 'status')
+			('user', 'polygon', 'assigned_timestamp', 'status')
 		)
 
 	def unassign(self) -> None:
