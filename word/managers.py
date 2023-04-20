@@ -2,6 +2,7 @@ import os
 import time
 from os.path import basename, join
 from tempfile import TemporaryDirectory
+from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.core.files import File
@@ -24,20 +25,62 @@ class WordQuerySet(BaseQuerySet):
 			**kwargs
 		)
 
-	def from_layout_response(self, layout_response, page, padding=0) -> None:
-		ret = []
-		for i in layout_response['regions']:
-			ret.append(
-				self.model(
+	def from_layout_response(
+		self,
+		layout_response: dict[str, Any],
+		page,
+		padding: int = 0,
+	) -> None:
+		Word = self.model
+		Point = Word.points.field.model
+		words = []
+		points = []
+		for region in layout_response['regions']:
+			if 'bounding_box' in region:
+				word = Word(
 					page=page,
-					line=i['line'],
-					x=i['bounding_box']['x'] - padding,
-					y=i['bounding_box']['y'] - padding,
-					w=i['bounding_box']['w'] + padding,
-					h=i['bounding_box']['h'] + padding,
+					line=region['line'],
+					x=region['bounding_box']['x'] - padding,
+					y=region['bounding_box']['y'] - padding,
+					w=region['bounding_box']['w'] + padding,
+					h=region['bounding_box']['h'] + padding,
 				)
-			)
-		self.model.objects.bulk_create(ret)
+				words.append(word)
+				points += word.update_points(save=False)
+			else:
+				point_list = []
+				word = Word(
+					page=page,
+					line=region['line']
+				)
+				for i in region['points']:
+					point_list.append(
+						Point(
+							word=word,
+							x=i['x'],
+							y=i['y'],
+						)
+					)
+				x = [i.x for i in point_list]
+				y = [i.y for i in point_list]
+				word.x = min(x)
+				word.y = min(y)
+				word.w = max(x) - min(x)
+				word.h = max(y) - min(y)
+				words.append(word)
+				points += point_list
+		print('Total words =', len(words))
+		print('Total points =', len(points))
+		Word.objects.bulk_create(words)
+		Point.objects.bulk_create(points)
+
+	def update_points(self):
+		points = []
+		for word in self.all():
+			points += word.update_points(save=False)
+		print('Performing DB Operation for creating points')
+		if points:
+			points[0]._meta.model.objects.bulk_create(points)
 
 
 	def update_cropped_images(self) -> None:

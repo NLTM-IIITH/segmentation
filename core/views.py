@@ -57,7 +57,7 @@ class SegmentView(BaseCoreView, TemplateView):
 				user=self.request.user
 			).first()
 		try:
-			gt = CrowdAPI.get_vocab(int(page.parent))
+			gt = CrowdAPI.get_vocab(int(page.parent)) # type: ignore
 		except:
 			gt = 'No GT Available'
 		kwargs.update({
@@ -138,12 +138,13 @@ class AssignView(BaseCoreView, TemplateView):
 		language = self.request.POST.get('language', '')
 		category = self.request.POST.get('category')
 		count = int(self.request.POST.get('count', 0))
-		print(user, language, category, count)
+		type = self.request.POST.get('type', 'rectangle')
+		print(user, language, category, count, type)
 		Page.objects.filter(
 			language=language,
 			status='segmented',
 			category=category,
-		)[:count].assign(user) # type: ignore
+		)[:count].assign(user, type == 'polygon') # type: ignore
 		messages.success(
 			self.request,
 			f'Assigned {count} pages to {user}'

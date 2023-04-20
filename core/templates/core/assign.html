@@ -41,6 +41,23 @@
         </select>
       </div>
     </div>
+    <div class="row mb-3">
+      <label for="id_type" class="col-sm-3 col-form-label">
+        Type
+        <br>
+        <span class="text-muted form-text">
+          This option will determine whether the page will be displayed in polygon
+          or rectangle bbox format while doing segmentation correction.
+          <b>TL;DR</b> If you don't know what this means leave it as default
+        </span>
+      </label>
+      <div class="col-sm-6">
+        <select class="form-select" name="type" id="id_type">
+          <option value="rectangle">Rectangle (Default)</option>
+          <option value="polygon">Polygon</option>
+        </select>
+      </div>
+    </div>
     <button type="submit" class="btn btn-primary">Assign</button>
   </form>
 </div>
