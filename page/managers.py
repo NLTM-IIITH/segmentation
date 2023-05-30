@@ -43,7 +43,7 @@ class PageQuerySet(BaseQuerySet):
 		 - Page.user
 		"""
 		self.all().assigned().update(
-			status='new',
+			status='segmented',
 			user=None
 		)
 
