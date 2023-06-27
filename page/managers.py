@@ -60,6 +60,8 @@ class PageQuerySet(BaseQuerySet):
 
 	def segment_single_batch(self):
 		pages = self.all().refresh()
+		if not pages.exists():
+			return None
 		Word.objects.filter(page__in=pages).delete()
 		tmp = TemporaryDirectory(prefix='segment')
 		self.save_images(tmp.name)
