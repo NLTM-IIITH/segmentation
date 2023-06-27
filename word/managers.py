@@ -31,7 +31,8 @@ class WordQuerySet(BaseQuerySet):
 		layout_response: dict[str, Any],
 		page,
 		padding: int = 0,
-	) -> None:
+		save: bool = True,
+	) -> tuple[list, list]:
 		Word = self.model
 		Point = Word.points.field.model
 		words = []
@@ -72,8 +73,10 @@ class WordQuerySet(BaseQuerySet):
 				points += point_list
 		print('Total words =', len(words))
 		print('Total points =', len(points))
-		Word.objects.bulk_create(words)
-		Point.objects.bulk_create(points)
+		if save:
+			Word.objects.bulk_create(words)
+			Point.objects.bulk_create(points)
+		return (words, points)
 
 	def update_points(self):
 		points = []

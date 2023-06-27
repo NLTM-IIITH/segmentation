@@ -1,7 +1,13 @@
+import os
+from tempfile import TemporaryDirectory
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from tqdm import tqdm
 
+from api.layout import LayoutAPI
 from core.managers import BaseQuerySet
+from word.models import Word
 
 User = get_user_model()
 
@@ -46,6 +52,41 @@ class PageQuerySet(BaseQuerySet):
 			status='segmented',
 			user=None
 		)
+
+	def save_images(self, path: str) -> str:
+		for page in tqdm(self.all(), desc='Saving Images'):
+			page.save_image(path)
+		return path
+
+	def segment_single_batch(self):
+		pages = self.all().refresh()
+		Word.objects.filter(page__in=pages).delete()
+		tmp = TemporaryDirectory(prefix='segment')
+		self.save_images(tmp.name)
+		model = settings.PAGE_CATEGORY_SEGMENTATION_MODEL.get(pages[0].category, 'v2_doctr')
+		words = LayoutAPI().fire(tmp.name, model)
+		word_list = []
+		point_list = []
+		for word in tqdm(words, desc='Parsing Layout output'):
+			wl, pl = Word.objects.from_layout_response( # type: ignore
+				word,
+				pages.get(id=int(word['image_name'].split('.')[0].strip())),
+				# self,
+				padding=0,
+				save=False
+			)
+			word_list += wl
+			point_list += pl
+		Word.objects.bulk_create(word_list)
+		Word.points.field.model.objects.bulk_create(point_list) # type: ignore
+		pages.update(status='segmented')
+
+	def segment_bulk(self, batch_size: int = 50):
+		pages = self.all()
+		batch_pages = [pages[i:i+batch_size] for i in range(0, pages.count(), batch_size)]
+		for batch in tqdm(batch_pages, desc=f'Performing Segment {batch_size} at a time'):
+			batch.segment_single_batch()
+
 
 	def segment(self) -> int:
 		"""
