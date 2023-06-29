@@ -29,10 +29,14 @@ class SegmentGTView(BaseCoreView, TemplateView):
 	def get_context_data(self, **kwargs):
 		page_id = int(self.request.GET.get('page_id', 0))
 		page = Page.objects.get(id=page_id)
+		gt = 'No GT Available'
 		try:
-			gt = CrowdAPI.get_vocab(int(page.parent))
+			if page.category == 'crowd_hw':
+				gt = CrowdAPI.get_vocab(int(page.parent)) # type: ignore
+			elif page.category == 'ilocr_crowd_hw':
+				gt = CrowdAPI.get_ilocr_vocab(int(page.parent)) # type: ignore
 		except:
-			gt = 'No GT Available'
+			pass
 		kwargs.update({
 			'page': page,
 			'gt': gt
@@ -56,10 +60,14 @@ class SegmentView(BaseCoreView, TemplateView):
 				status='assigned',
 				user=self.request.user
 			).first()
+		gt = 'No GT Available'
 		try:
-			gt = CrowdAPI.get_vocab(int(page.parent)) # type: ignore
+			if page.category == 'crowd_hw':
+				gt = CrowdAPI.get_vocab(int(page.parent)) # type: ignore
+			elif page.category == 'ilocr_crowd_hw':
+				gt = CrowdAPI.get_ilocr_vocab(int(page.parent)) # type: ignore
 		except:
-			gt = 'No GT Available'
+			pass
 		kwargs.update({
 			'page': page,
 			'gt': gt

@@ -71,8 +71,6 @@ class WordQuerySet(BaseQuerySet):
 				word.h = max(y) - min(y)
 				words.append(word)
 				points += point_list
-		print('Total words =', len(words))
-		print('Total points =', len(points))
 		if save:
 			Word.objects.bulk_create(words)
 			Point.objects.bulk_create(points)

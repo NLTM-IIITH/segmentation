@@ -151,7 +151,7 @@ LOGOUT_REDIRECT_URL = 'user:login'
 PAGE_CATEGORY_SEGMENTATION_MODEL = {
 	'crowd_hw': 'craft',
 	'ilocr_crowd_hw': 'craft',
-	'harsh_crowd_st': 'craft',
+	'harsh_1000_st': 'craft',
 	'testing': 'textpms'
 }
 PAGE_CATEGORY_OCR_VERIFICATION_MODEL = {
