@@ -14,6 +14,7 @@ from page.models import Page
 from word.models import Word
 
 from .helper import handle_upload_zipfile
+from .tasks import send_to_verification
 
 User = get_user_model()
 
@@ -183,14 +184,20 @@ class SendToVerificationView(BaseCoreView, TemplateView):
 		status = self.request.POST.get('status')
 		version = self.request.POST.get('version', 'v2')
 		modality = self.request.POST.get('modality', 'printed')
-		count = Page.objects.filter(
+		page_ids = list(Page.objects.filter(
 			language=language,
-			status=status,
 			category=category,
-		).send_to_verification(version, modality) # type: ignore
+			status=status
+		).values_list('id', flat=True))
+		send_to_verification.delay(page_ids, version, modality)
+		# count = Page.objects.filter(
+		# 	language=language,
+		# 	status=status,
+		# 	category=category,
+		# ).send_to_verification(version, modality) # type: ignore
 		messages.success(
 			self.request,
-			f'Sent {count} pages to the Verification portal'
+			f'Sent pages to the Verification portal'
 		)
 		return redirect('core:send-to-verification')
 
