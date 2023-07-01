@@ -155,5 +155,13 @@ PAGE_CATEGORY_SEGMENTATION_MODEL = {
 	'testing': 'textpms'
 }
 PAGE_CATEGORY_OCR_VERIFICATION_MODEL = {
-	'Printed_9_Minor': 'v4_robust'
+	'Printed_9_Minor': 'v4_robust',
+    'harsh_1000_st': 'v3_st'
 }
+
+BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Asia/Kolkata'

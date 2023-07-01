@@ -175,9 +175,12 @@ class Page(BaseModel):
 		self.user = user
 		self.save()
 
-	def send_to_verification(self):
+	def send_to_verification(self, ocr_version: str = '', ocr_modality: str = 'printed'):
+		if not ocr_version:
+			ocr_version = settings.PAGE_CATEGORY_OCR_VERIFICATION_MODEL[self.category]
 		ver = self.words.all().send_to_verification( # type: ignore
-			settings.PAGE_CATEGORY_OCR_VERIFICATION_MODEL[self.category]
+			ocr_version,
+			ocr_modality
 		)
 		ver = [i.id for i in ver]
 		Word.objects.filter(id__in=ver).update(status='sent_verification')

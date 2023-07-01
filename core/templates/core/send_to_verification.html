@@ -35,6 +35,30 @@
         </select>
       </div>
     </div>
+    <div class="row mb-3">
+      <label for="id_version" class="col-sm-3 col-form-label">OCR Version</label>
+      <div class="col-sm-6">
+        <select class="form-select" name="version" id="id_version">
+          <option value="v4">v4</option>
+          <option value="v4_robust">v4_robust</option>
+          <option value="v4_bilingual">v4_bilingual</option>
+          <option value="v4_robustbilingual">v4_robustbilingual</option>
+          <option value="v3_st">v3_st</option>
+          <option value="v3">v3</option>
+          <option value="v2">v2</option>
+        </select>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="id_modality" class="col-sm-3 col-form-label">OCR Modality</label>
+      <div class="col-sm-6">
+        <select class="form-select" name="modality" id="id_modality">
+          <option value="printed">Printed</option>
+          <option value="handwritten">Handwritten</option>
+          <option value="scenetext">SceneText</option>
+        </select>
+      </div>
+    </div>
     <button type="submit" class="btn btn-primary">Send</button>
   </form>
 </div>

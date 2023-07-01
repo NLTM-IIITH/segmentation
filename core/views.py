@@ -116,7 +116,6 @@ class UploadView(BaseCoreView, TemplateView):
 			self.request.FILES['file'],
 			language,
 			category,
-			separator='\t'
 		)
 		messages.success(
 			self.request,
@@ -182,11 +181,13 @@ class SendToVerificationView(BaseCoreView, TemplateView):
 		language = self.request.POST.get('language', '')
 		category = self.request.POST.get('category')
 		status = self.request.POST.get('status')
+		version = self.request.POST.get('version', 'v2')
+		modality = self.request.POST.get('modality', 'printed')
 		count = Page.objects.filter(
 			language=language,
 			status=status,
 			category=category,
-		).send_to_verification() # type: ignore
+		).send_to_verification(version, modality) # type: ignore
 		messages.success(
 			self.request,
 			f'Sent {count} pages to the Verification portal'

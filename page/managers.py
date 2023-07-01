@@ -108,9 +108,9 @@ class PageQuerySet(BaseQuerySet):
 				print(f'Encounter error while segmenting {repr(page)}')
 		return count
 	
-	def send_to_verification(self):
+	def send_to_verification(self, ocr_version: str = '', ocr_modality: str = 'printed'):
 		"""
 		This is function to send all the words to verification portal.
 		"""
-		for i in tqdm(self.all()):
-			i.send_to_verification()
+		for i in tqdm(self.all(), desc='Sending to Verification Portal'):
+			i.send_to_verification(ocr_version, ocr_modality)

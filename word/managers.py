@@ -130,16 +130,36 @@ class WordQuerySet(BaseQuerySet):
 			except Exception:
 				pass
 
-	def perform_ocr(self, version: str = 'v2') -> list:
+	def perform_ocr(
+			self,
+			version: str = 'v2',
+			modality: str = 'printed'
+		) -> list[tuple[Any, str]]:
+		"""Performs the OCR on all the words using ILOCR API.
+		This function doesn't change any fields of the model, it simply
+		performs the OCR and returns all the words and their OCR outputs
+
+		Args:
+			version (str, optional): OCR model version to call. Defaults to 'v2'.
+			modality (str, optional): Modality of the model to call. Defaults to 'printed'.
+
+		Returns:
+			list[tuple[Any, str]]: This function returns the list of tuple
+			containing 2 elements, one is the word (Word) object and other
+			is the string ocr output received from the OCRAPI.
+		"""
 		if not self.exists():
+			# Return empty is there are no words to process
 			return []
-		# print(f'processing for {self.count()} words')
 		tmp = TemporaryDirectory(prefix='ocr')
 		folder = tmp.name
 		self.save_images(folder, as_id=True)
-		# print('saved all the word images to the folder')
-		a = OCRAPI.fire(folder, self.all()[0].page.language, modality='printed', version=version)
-		# print('completed the OCR API')
+		a = OCRAPI.fire(
+			folder,
+			self.all()[0].page.language,
+			modality=modality,
+			version=version
+		)
 
 		words = list(self.all().order_by('id'))
 		assert len(words) == len(a)
@@ -152,8 +172,8 @@ class WordQuerySet(BaseQuerySet):
 			))
 		return ver
 
-	def send_to_verification(self, version: str = 'v2'):
-		ver = self.all().perform_ocr(version)
+	def send_to_verification(self, ocr_version: str = 'v2', ocr_modality: str = 'printed') -> list:
+		ver = self.all().perform_ocr(ocr_version, ocr_modality)
 		send_to_verification(ver)
 		return [i[0] for i in ver]
 

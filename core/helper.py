@@ -13,7 +13,6 @@ def handle_upload_zipfile(
 	file,
 	language: str,
 	category: str,
-	separator: str
 ) -> Tuple[int, int]:
 	tmp = TemporaryDirectory()
 	folder = tmp.name
@@ -25,11 +24,6 @@ def handle_upload_zipfile(
 		with open(zip_path, 'wb+') as f:
 			for chunk in file.chunks():
 				f.write(chunk)
-	# zip_path = join(folder, 'data.zip')
-	# print('Saving the ZIP')
-	# with open(zip_path, 'wb+') as f:
-	# 	for chunk in file.chunks():
-	# 		f.write(chunk)
 	print('Extract the ZIP')
 	with zipfile.ZipFile(zip_path, 'r') as f:
 		f.extractall(folder)
@@ -38,7 +32,7 @@ def handle_upload_zipfile(
 		all_files += [join(root, i) for i in files]
 	print(f'{len(all_files)} files present inside ZIP')
 	all_files = [i for i in all_files if not i.endswith('zip')]
-	image_files = [i for i in all_files if i.endswith('jpg') or i.endswith('png')]
+	image_files = [i for i in all_files if os.path.splitext(i)[1] in ('.jpg', '.jpeg', '.png')]
 	print(image_files)
 	pages = []
 	total = failed = 0
