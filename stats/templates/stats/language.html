@@ -30,6 +30,7 @@
         <th>Assigned Pages</th>
         <th>Corrected Pages</th>
         <th>Skipped Pages</th>
+        <th>Sent Pages</th>
         <th>Total Pages</th>
       </tr>
     </thead>
@@ -42,6 +43,7 @@
         <td>{{ language.assigned_count|default:"0" }}</td>
         <td>{{ language.corrected_count|default:"0" }}</td>
         <td>{{ language.skipped_count|default:"0" }}</td>
+        <td>{{ language.sent_count|default:"0" }}</td>
         <td>{{ language.total_count|default:"0" }}</td>
       </tr>
       {% endfor %}
