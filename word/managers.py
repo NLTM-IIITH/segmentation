@@ -80,7 +80,6 @@ class WordQuerySet(BaseQuerySet):
 		points = []
 		for word in self.all():
 			points += word.update_points(save=False)
-		print('Performing DB Operation for creating points')
 		if points:
 			points[0]._meta.model.objects.bulk_create(points)
 
