@@ -125,6 +125,11 @@ class Page(BaseModel):
 		null=True,
 		blank=True,
 	)
+	sent_timestamp = models.DateTimeField(
+		default=None,
+		null=True,
+		blank=True,
+	)
 
 
 	class Meta:
@@ -194,6 +199,7 @@ class Page(BaseModel):
 
 		Effected Fields
 		 - Page.status
+		 - Page.sent_timestamp
 		 - Page.words.status
 		"""
 		assert self.status == 'corrected', 'Only corrected pages can be processed'
@@ -206,6 +212,7 @@ class Page(BaseModel):
 			ver = [i.id for i in ver]
 			Word.objects.filter(id__in=ver).update(status='sent_verification')
 		self.status = 'sent'
+		self.sent_timestamp = timezone.localtime()
 		self.save()
 
 	def export(self, path: str):

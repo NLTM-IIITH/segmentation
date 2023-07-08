@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import time
 from os.path import basename, join
@@ -14,6 +15,8 @@ from api.ocr import OCRAPI
 from core.managers import BaseQuerySet
 
 from .helper import send_to_editing, send_to_verification
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -105,7 +108,7 @@ class WordQuerySet(BaseQuerySet):
 		for word in words:
 			location = join(tmp.name, f'{str(word.id)}.jpg')
 			image.crop(word.get_crop_coords()).save(location)
-		print(f'completed the cropping of images in {time.time()-t} sec')
+		logging.debug(f'completed the cropping of images in {time.time()-t} sec')
 		t = time.time()
 		for word in words:
 			location = join(tmp.name, f'{str(word.id)}.jpg')
@@ -185,20 +188,20 @@ class WordQuerySet(BaseQuerySet):
 		"""
 		if not self.exists():
 			return ([], [])
-		print(f'processing for {self.count()} words')
+		logger.debug(f'processing for {self.count()} words')
 		tmp = TemporaryDirectory(prefix='ocr')
 		folder = tmp.name
 		parent = self.all()[0].page.parent
 		self.save_images(folder, as_id=True)
-		print('saved all the word images to the folder')
+		logger.debug('saved all the word images to the folder')
 		vocab = CrowdAPI.get_vocab(parent)
 		vocab = vocab.strip().replace('\n', ' ').strip().split(' ')
-		print(f'Got the vocab from the crowdsource: {vocab}')
+		logger.debug(f'Got the vocab from the crowdsource: {vocab}')
 		a = OCRAPI.fire(folder, self.all()[0].page.language, incldue_prob=True)
-		print('completed the OCR API')
+		logger.debug('completed the OCR API')
 		b = OCRAPI.fire_postprocess(a, self.all()[0].page.language, vocab)
 		del a
-		print('completed the postprocessing API')
+		logger.debug('completed the postprocessing API')
 
 		words = list(self.all().order_by('id'))
 		assert len(words) == len(b), 'Some words were lost in postprocessing API'
@@ -219,11 +222,11 @@ class WordQuerySet(BaseQuerySet):
 
 		os.system(f'rm -rf {folder}/*')
 		if ver:
-			print(f'sending {len(ver)} words to verification')
+			logger.debug(f'sending {len(ver)} words to verification')
 			send_to_verification(ver)
 			ver = [i[0] for i in ver]
 		if edit:
-			print(f'sending {len(edit)} words to editing')
+			logger.debug(f'sending {len(edit)} words to editing')
 			send_to_editing(edit)
 			edit = [i[0] for i in edit]
 		return (edit, ver)
