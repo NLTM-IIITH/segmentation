@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.min.css" integrity="sha512-3NbO5DhK9LuM6wu+IZvV5AYXxqSmj/lfLLmHMV9t18ij+MfmhhxeYEunHllEu+TFJ4tJM5D0DhazM2EGGGvNmQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+{% endblock%}
+
+{% block custom_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/viewerjs/1.10.5/viewer.min.js" integrity="sha512-i5q29evO2Z4FHGCO+d5VLrwgre/l+vaud5qsVqQbPXvHmD9obORDrPIGFpP2+ep+HY+z41kAmVFRHqQAjSROmA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+  $(document).ready(function() {
+    const viewer = new Viewer(document.getElementById('image'), {
+      inline: true,
+      backdrop: false,
+      button: false,
+      minHeight: 500,
+      movable: false,
+      navbar: false,
+      scalable: false,
+      title: false,
+      toolbar: false,
+      zoomable: false,
+      viewed() {
+        this.viewer.zoomTo(1);
+      },
+    });
+
+    $('#rleft').click(function() {
+      console.log("rotateLeft called");
+      var rot = parseInt(document.getElementById("rotate").value);
+      rot -= 90;
+      console.log(rot);
+      document.getElementById("rotate").value = rot.toString();
+      viewer.rotate(-90);
+    });
+
+    $('#rright').click(function() {
+      console.log("rotateRight called");
+      var rot = parseInt(document.getElementById("rotate").value);
+      rot += 90;
+      console.log(rot);
+      document.getElementById("rotate").value = rot.toString();
+      viewer.rotate(90);
+    });
+  });
+</script>
+{% endblock%}
+
+{% block main_content %}
+<div class="row mt-3 mx-3">
+  <div class="col-2">
+    <div class="mb-3">
+      Page ID: <b>{{ page.id }}</b>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="id" value="{{ page.id }}">
+      <input type="hidden" name="rotate" id="rotate" value="0">
+      <div class="btn-group d-flex" role="group">
+        <button type="submit" class="btn btn-danger mr-4" name="reject">Reject</button>
+        <button type="submit" class="btn btn-success ml-4" name="approve">Approve</button>
+      </div>
+    </form>
+    <button type="button" class="btn btn-info mt-3" data-toggle="modal" data-target="#instructionsmodal">Instructions</button>
+  </div>
+  <div class="col">
+    <img src="data:image/jpeg;base64, {{ page.get_highlighted_base64_image }}" id="image" height="400" class="d-none">
+  </div>
+</div>
+
+<div class="modal fade" id="instructionsmodal" tabindex="-1" role="dialog" aria-labelledby="modallabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modallabel">Instructions</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <div>
+          <p>
+            Some points to keep in mind when performing Verification.
+            <ol>
+              <li class="text-success">Image is clear, Approve</li>
+              <li class="text-danger">Image Distorted or incorrectly oriented or blurred, etc., Reject</li>
+            </ol>
+          </p>
+          <p>
+            Examples for Rejected images.
+          </p>
+          <img src="{% static 'core/reject_1.jpg' %}" width="700" height="500">
+          <br>
+          <img src="{% static 'core/reject_2.jpg' %}" width="700" height="500">
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

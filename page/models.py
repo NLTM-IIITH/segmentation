@@ -1,4 +1,6 @@
-from os.path import join
+import base64
+import shutil
+from os.path import basename, join
 from tempfile import TemporaryDirectory
 
 import cv2
@@ -36,6 +38,11 @@ class Page(BaseModel):
 		# this implies that the page has been processed and all the words
 		# of this page are either sent to verification or editing
 		('sent', 'Sent'),
+	)
+	QC_STATUS_CHOICES = (
+		('', ''),
+		('approved', 'Approved'),
+		('rejected', 'Rejected'),
 	)
 	LANGUAGE_CHOICES = (
 		('', 'Select Language'),
@@ -85,6 +92,17 @@ class Page(BaseModel):
 		choices=STATUS_CHOICES,
 		default='new',
 	)
+
+	qc_status = models.CharField(
+		max_length=15,
+		choices=QC_STATUS_CHOICES,
+		help_text=(
+			'This status is stands for Quality Check Status '
+			'Defines whether a page is approved or rejected upon '
+			'showing to a verifier after segmentation editing.'
+		),
+		default='',
+	)
 	language = models.CharField(
 		max_length=20,
 		choices=LANGUAGE_CHOICES,
@@ -126,6 +144,11 @@ class Page(BaseModel):
 		blank=True,
 	)
 	sent_timestamp = models.DateTimeField(
+		default=None,
+		null=True,
+		blank=True,
+	)
+	qc_timestamp = models.DateTimeField(
 		default=None,
 		null=True,
 		blank=True,
@@ -287,3 +310,41 @@ class Page(BaseModel):
 			).count())
 		ret = [tuple(i) for i in ret]
 		return ret
+
+	@transaction.atomic
+	def approve(self):
+		self.qc_status = 'approved'
+		self.qc_timestamp = timezone.localtime()
+		self.save()
+
+	@transaction.atomic
+	def reject(self):
+		self.qc_status = 'rejected'
+		self.qc_timestamp = timezone.localtime()
+		self.save()
+
+	def get_highlighted_base64_image(self) -> str:
+		"""
+		creates the line segment image and saves in the model from the
+		data saved in model of the page object
+		"""
+		tmp_dir = TemporaryDirectory(prefix='highlight')
+		folder = tmp_dir.name
+		shutil.copy(self.image.path, folder)
+		image = join(folder, basename(self.image.path))
+		img = cv2.imread(image)
+
+		alpha = 0.3
+		color = (255,0,0)
+		for word in self.words.all():
+			overlay = img.copy()
+			cv2.rectangle(
+				overlay,
+				(word.x, word.y),
+				(word.x + word.w, word.y + word.h),
+				color,
+				-1
+			)
+			cv2.addWeighted(overlay, alpha, img, 1-alpha, 0, img)
+		cv2.imwrite(image, img)
+		return base64.b64encode(open(image, 'rb').read()).decode()

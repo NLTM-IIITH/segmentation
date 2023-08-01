@@ -11,5 +11,7 @@ urlpatterns = [
 	path('assign/', views.AssignView.as_view(), name='assign'),
 	path('upload/', views.UploadView.as_view(), name='upload'),
 
+	path('qc/', views.QCView.as_view(), name='qc'),
+
 	path('send_to_verification/', views.SendToVerificationView.as_view(), name='send-to-verification'),
 ]

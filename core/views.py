@@ -1,4 +1,5 @@
 import json
+from typing import Any, Dict
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -43,6 +44,29 @@ class SegmentGTView(BaseCoreView, TemplateView):
 			'gt': gt
 		})
 		return super().get_context_data(**kwargs)
+
+
+class QCView(BaseCoreView, TemplateView):
+	template_name = 'core/qc.html'
+
+	def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
+		kwargs.update({
+			'page': Page.objects.filter(
+				category='ilocr_crowd_hw',
+				status='corrected',
+				qc_status='',
+			).order_by('language').first()
+		})
+		return super().get_context_data(**kwargs)
+
+	def post(self, request, *args, **kwargs):
+		print(request.POST)
+		page = Page.objects.get(id=request.POST.get('id'))
+		if 'approve' in request.POST:
+			page.approve()
+		elif 'reject' in request.POST:
+			page.reject()
+		return redirect('core:qc')
 
 
 class SegmentView(BaseCoreView, TemplateView):
