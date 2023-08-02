@@ -4,7 +4,7 @@ from . import views
 
 app_name = 'core'
 urlpatterns = [
-	path('', views.SegmentView.as_view(), name='segment'),
+	path('', views.IndexView.as_view(), name='index'),
 	path('gt/', views.SegmentGTView.as_view(), name='segment-gt'),
 	path('save/', views.SegmentSaveView.as_view(), name='segment-save'),
 	path('skip/', views.SegmentSkipView.as_view(), name='segment-skip'),

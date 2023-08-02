@@ -69,8 +69,8 @@ class QCView(BaseCoreView, TemplateView):
 		return redirect('core:qc')
 
 
-class SegmentView(BaseCoreView, TemplateView):
-	template_name = 'core/segment.html'
+class IndexView(BaseCoreView, TemplateView):
+	template_name = 'core/index.html'
 	navigation = 'segment'
 
 	def post(self, *args, **kwargs):
@@ -118,7 +118,7 @@ class SegmentSaveView(BaseCoreView, TemplateView):
 		page.user = request.user
 		page.corrected_timestamp = timezone.localtime()
 		page.save()
-		return redirect('core:segment')
+		return redirect('core:index')
 
 
 class SegmentSkipView(BaseCoreView, TemplateView):
@@ -126,7 +126,7 @@ class SegmentSkipView(BaseCoreView, TemplateView):
 		page_id = int(request.GET.get('page_id', 0))
 		page = Page.objects.get(id=page_id)
 		page.skip(request.user)
-		return redirect('core:segment')
+		return redirect('core:index')
 
 
 class UploadView(BaseCoreView, TemplateView):
