@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
 
 from api.crowd import CrowdAPI
+from core.tasks import perform_segment_bulk
 from page.models import Page
 from word.models import Word
 
@@ -194,6 +195,38 @@ class AssignView(BaseCoreView, TemplateView):
 			'language_list': language_list,
 			'user_list': User.objects.filter(groups__name='Annotater'),
 			'category_list': Page.get_all_categories(),
+		})
+		return super().get_context_data(**kwargs)
+
+class SegmentView(BaseCoreView, TemplateView):
+	template_name = 'core/segment.html'
+	navigation = 'segment'
+
+	def post(self, *args, **kwargs):
+		language = self.request.POST.get('language', '')
+		category = self.request.POST.get('category')
+		count = int(self.request.POST.get('count', 0))
+		print(language, category, count)
+		pages = Page.objects.filter(category=category, status='new')
+		if language:
+			pages = pages.filter(language=language)
+		if count:
+			pages = pages[:count]
+		pages = list(pages.values_list('id', flat=True))
+		perform_segment_bulk.delay(pages)
+		messages.success(
+			self.request,
+			f'Performing Segmentation on {len(pages)} pages.'
+		)
+		return redirect('core:segment')
+
+	def get_context_data(self, **kwargs):
+		language_list: list[list[str | int]] = [list(i) for i in Page.LANGUAGE_CHOICES]
+		for i in language_list:
+			i.append(0)
+		kwargs.update({
+			'language_list': language_list,
+			'category_list': Page.get_all_categories(status='new'),
 		})
 		return super().get_context_data(**kwargs)
 

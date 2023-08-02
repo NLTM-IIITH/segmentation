@@ -32,6 +32,11 @@
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="{% url 'core:index' %}">Home</a>
           </li>
+          {% if user.is_superuser %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'core:segment' %}">Segment</a>
+          </li>
+          {% endif %}
           {% if user.is_staff %}
           <li class="nav-item">
             <a class="nav-link" href="{% url 'core:assign' %}">Assign</a>

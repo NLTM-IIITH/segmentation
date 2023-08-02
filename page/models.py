@@ -301,12 +301,14 @@ class Page(BaseModel):
 			)
 
 	@staticmethod
-	def get_all_categories() -> list[tuple[str, int]]:
-		ret = Page.objects.values_list('category', flat=True).distinct()
+	def get_all_categories(**kwargs) -> list[tuple[str, int]]:
+		ret = Page.objects.filter(**kwargs)
+		ret = ret.values_list('category', flat=True).distinct()
 		ret = [[i] for i in ret]
 		for i in ret:
 			i.append(Page.objects.filter(
-				category=i[0]
+				category=i[0],
+				**kwargs
 			).count())
 		ret = [tuple(i) for i in ret]
 		return ret

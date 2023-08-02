@@ -10,6 +10,7 @@ urlpatterns = [
 	path('skip/', views.SegmentSkipView.as_view(), name='segment-skip'),
 	path('assign/', views.AssignView.as_view(), name='assign'),
 	path('upload/', views.UploadView.as_view(), name='upload'),
+	path('segment/', views.SegmentView.as_view(), name='segment'),
 
 	path('qc/', views.QCView.as_view(), name='qc'),
 
