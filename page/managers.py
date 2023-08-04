@@ -1,4 +1,5 @@
 import os
+from os.path import join
 from tempfile import TemporaryDirectory
 
 from django.conf import settings
@@ -39,6 +40,16 @@ class PageQuerySet(BaseQuerySet):
 			pages,
 			('user', 'polygon', 'assigned_timestamp', 'status')
 		)
+
+	def export(self, path: str):
+		image_folder = join(path, 'images')
+		gt_folder = join(path, 'gt')
+		if not os.path.exists(image_folder):
+			os.makedirs(image_folder)
+		if not os.path.exists(gt_folder):
+			os.makedirs(gt_folder)
+		for i in tqdm(self.all()):
+			i.export(image_folder, gt_folder)
 
 	def unassign(self) -> None:
 		"""

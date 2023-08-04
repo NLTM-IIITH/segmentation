@@ -238,25 +238,13 @@ class Page(BaseModel):
 		self.sent_timestamp = timezone.localtime()
 		self.save()
 
-	def export(self, path: str):
-		"""
-		"""
-		image_path = join(path, f'{self.id}.jpg') # type: ignore
-		img = cv2.imread(self.image.path)
-
-		alpha = 0.3
-		color = (255,0,0)
-		for word in self.words.all(): # type: ignore
-			overlay = img.copy()
-			cv2.rectangle(
-				overlay,
-				(word.x, word.y),
-				(word.x + word.w, word.y + word.h),
-				color,
-				-1
-			)
-			cv2.addWeighted(overlay, alpha, img, 1-alpha, 0, img)
-		cv2.imwrite(image_path, img)
+	def export(self, image_path: str, gt_path: str):
+		self.save_image(image_path)
+		ret = []
+		for i in self.words.all():
+			ret.append(f'{i.x}\t{i.y}\t{i.w}\t{i.h}')
+		with open(join(gt_path, f'{self.id}.txt'), 'w', encoding='utf-8') as f:
+			f.write('\n'.join(ret))
 
 	@transaction.atomic
 	def get_annotations(self):
