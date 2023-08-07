@@ -191,15 +191,19 @@ class WordQuerySet(BaseQuerySet):
 		logger.debug(f'processing for {self.count()} words')
 		tmp = TemporaryDirectory(prefix='ocr')
 		folder = tmp.name
-		parent = self.all()[0].page.parent
+		page = self.all()[0].page
+		parent = page.parent
 		self.save_images(folder, as_id=True)
 		logger.debug('saved all the word images to the folder')
-		vocab = CrowdAPI.get_vocab(parent)
+		if page.category == 'crowd_hw':
+			vocab = CrowdAPI.get_vocab(parent)
+		else:
+			vocab = CrowdAPI.get_ilocr_vocab(parent)
 		vocab = vocab.strip().replace('\n', ' ').strip().split(' ')
 		logger.debug(f'Got the vocab from the crowdsource: {vocab}')
-		a = OCRAPI.fire(folder, self.all()[0].page.language, incldue_prob=True)
+		a = OCRAPI.fire(folder, page.language, incldue_prob=True)
 		logger.debug('completed the OCR API')
-		b = OCRAPI.fire_postprocess(a, self.all()[0].page.language, vocab)
+		b = OCRAPI.fire_postprocess(a, page.language, vocab)
 		del a
 		logger.debug('completed the postprocessing API')
 

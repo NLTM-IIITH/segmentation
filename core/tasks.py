@@ -40,3 +40,25 @@ def crowd_send(count: int = 1_000):
 	logger.warn(errors)
 	logger.warn(f'Sent the {count} pages to editing/verification')
 	logger.warn(f'Encounter {len(errors)} while sending. find the list of error ids previously')
+
+@shared_task
+def ilocr_crowd_send(count: int = 1_000):
+	logger.debug('Tranfering the ilocr_crowd_hw pages to verification/editing')
+	pages = Page.objects.filter(
+		category='ilocr_crowd_hw',
+		status='corrected',
+		qc_status='approved',
+	).order_by('language')[:count]
+	completed = 1
+	errors = []
+	for page in pages:
+		logger.warn(f'[{completed}/{count}] Processing {page.language.title()} page')
+		try:
+			page.send_to_editing_verification()
+		except Exception:
+			logger.error('Some error occured while sending.')
+			errors.append(page.id)
+		completed += 1
+	logger.warn(errors)
+	logger.warn(f'Sent the {count} pages to editing/verification')
+	logger.warn(f'Encounter {len(errors)} while sending. find the list of error ids previously')

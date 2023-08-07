@@ -226,7 +226,9 @@ class Page(BaseModel):
 		 - Page.words.status
 		"""
 		assert self.status == 'corrected', 'Only corrected pages can be processed'
-		assert self.category == 'crowd_hw', 'This facility only available for crowd source for now'
+		assert self.category in ['crowd_hw', 'ilocr_crowd_hw'], (
+			'This facility only available for crowd source for now'
+		)
 		edit, ver = self.words.all().send_to_editing_verification() # type: ignore
 		if edit:
 			edit = [i.id for i in edit]
