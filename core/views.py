@@ -130,7 +130,8 @@ class SegmentSkipView(BaseCoreView, TemplateView):
 		return redirect('core:index')
 
 
-class UploadView(BaseCoreView, TemplateView):
+@method_decorator(csrf_exempt, name='dispatch')
+class UploadView(TemplateView):
 	template_name = 'core/upload.html'
 	navigation = 'upload'
 
