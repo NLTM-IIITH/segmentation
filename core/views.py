@@ -53,7 +53,7 @@ class QCView(BaseCoreView, TemplateView):
 	def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
 		kwargs.update({
 			'page': Page.objects.filter(
-				category='ilocr_crowd_hw',
+				category__in=('crowd_hw', 'ilocr_crowd_hw'),
 				status='corrected',
 				qc_status='',
 			).order_by('language').first()
