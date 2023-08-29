@@ -64,10 +64,12 @@ class PageQuerySet(BaseQuerySet):
 			user=None
 		)
 
-	def save_images(self, path: str) -> str:
+	def save_images(self, path: str) -> list[int]:
+		ret = []
 		for page in tqdm(self.all(), desc='Saving Images'):
-			page.save_image(path)
-		return path
+			if not page.save_image(path):
+				ret.append(page.id)
+		return ret
 
 	def segment_single_batch(self):
 		pages = self.all().refresh()
@@ -75,7 +77,7 @@ class PageQuerySet(BaseQuerySet):
 			return None
 		Word.objects.filter(page__in=pages).delete()
 		tmp = TemporaryDirectory(prefix='segment')
-		self.save_images(tmp.name)
+		error_pages = self.save_images(tmp.name)
 		model = settings.PAGE_CATEGORY_SEGMENTATION_MODEL.get(pages[0].category, 'v2_doctr')
 		words = LayoutAPI().fire(tmp.name, model)
 		word_list = []
@@ -92,7 +94,7 @@ class PageQuerySet(BaseQuerySet):
 			point_list += pl
 		Word.objects.bulk_create(word_list)
 		Word.points.field.model.objects.bulk_create(point_list) # type: ignore
-		pages.update(status='segmented')
+		pages.exclude(id__in=error_pages).update(status='segmented')
 
 	def segment_bulk(self, batch_size: int = 50):
 		pages = self.all()

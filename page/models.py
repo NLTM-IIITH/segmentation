@@ -270,8 +270,11 @@ class Page(BaseModel):
 		and save the region image in the specified path
 		"""
 		path = join(path, f'{self.id}.jpg') # type: ignore
-		img = Image.open(self.image.path)
-		img.convert('RGB').save(path)
+		try:
+			img = Image.open(self.image.path)
+			img.convert('RGB').save(path)
+		except:
+			return ''
 		return path
 
 	def perform_layout_parser(self):
