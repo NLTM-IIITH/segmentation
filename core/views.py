@@ -4,6 +4,7 @@ from typing import Any, Dict
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models.functions import Lower
 from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.decorators import method_decorator
@@ -194,7 +195,9 @@ class AssignView(BaseCoreView, TemplateView):
 			).count())
 		kwargs.update({
 			'language_list': language_list,
-			'user_list': User.objects.filter(groups__name='Annotater'),
+			'user_list': User.objects.filter(
+				groups__name='Annotater'
+			).order_by(Lower('username')),
 			'category_list': Page.get_all_categories(),
 		})
 		return super().get_context_data(**kwargs)

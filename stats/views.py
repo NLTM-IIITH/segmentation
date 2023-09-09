@@ -49,7 +49,7 @@ class UserStatsView(BaseStatsView, TemplateView):
 			x['pk'] = user.pk
 			ret.append(x)
 		kwargs.update({
-			'user_list': ret
+			'user_list': sorted(ret, key=lambda x:x['name'].lower())
 		})
 		return super().get_context_data(**kwargs)
 
