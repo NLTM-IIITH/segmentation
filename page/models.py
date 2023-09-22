@@ -331,6 +331,7 @@ class Page(BaseModel):
 		folder = tmp_dir.name
 		shutil.copy(self.image.path, folder)
 		image = join(folder, basename(self.image.path))
+		out = join(folder, 'image.jpg')
 		img = cv2.imread(image)
 
 		alpha = 0.3
@@ -345,5 +346,5 @@ class Page(BaseModel):
 				-1
 			)
 			cv2.addWeighted(overlay, alpha, img, 1-alpha, 0, img)
-		cv2.imwrite(image, img)
-		return base64.b64encode(open(image, 'rb').read()).decode()
+		cv2.imwrite(out, img)
+		return base64.b64encode(open(out, 'rb').read()).decode()
