@@ -156,7 +156,8 @@ PAGE_CATEGORY_SEGMENTATION_MODEL = {
 }
 PAGE_CATEGORY_OCR_VERIFICATION_MODEL = {
 	'Printed_9_Minor': 'v4_robust',
-    'harsh_1000_st': 'v3_st'
+    'harsh_1000_st': 'v3_st',
+    'ilocr_crowd_hw': 'v3_post'
 }
 
 BROKER_URL = 'redis://localhost:6379'
