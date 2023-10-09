@@ -118,6 +118,16 @@ class Page(BaseModel):
 		help_text='Indicates the user that corrects this pages segmentation'
 	)
 
+	qc_user = models.ForeignKey(
+		User,
+		on_delete=models.SET_NULL,
+		related_name='qc_pages',
+		null=True,
+		blank=True,
+		default=None,
+		help_text='Indicates the user that performs the QC on this page'
+	)
+
 	parent = models.CharField(
 		default='',
 		max_length=100,
@@ -311,15 +321,17 @@ class Page(BaseModel):
 		return ret
 
 	@transaction.atomic
-	def approve(self):
+	def approve(self, user):
 		self.qc_status = 'approved'
 		self.qc_timestamp = timezone.localtime()
+		self.qc_user = user
 		self.save()
 
 	@transaction.atomic
-	def reject(self):
+	def reject(self, user):
 		self.qc_status = 'rejected'
 		self.qc_timestamp = timezone.localtime()
+		self.qc_user = user
 		self.save()
 
 	def get_highlighted_base64_image(self) -> str:

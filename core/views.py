@@ -65,9 +65,9 @@ class QCView(BaseCoreView, TemplateView):
 		print(request.POST)
 		page = Page.objects.get(id=request.POST.get('id'))
 		if 'approve' in request.POST:
-			page.approve()
+			page.approve(request.user)
 		elif 'reject' in request.POST:
-			page.reject()
+			page.reject(request.user)
 		return redirect('core:qc')
 
 
