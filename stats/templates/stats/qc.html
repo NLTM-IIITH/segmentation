@@ -25,6 +25,7 @@
     <thead>
       <tr>
         <th>Language</th>
+        <th>QC Pending</th>
         <th>QC Approved</th>
         <th>QC Rejected</th>
         <th>Total Pages</th>
@@ -34,6 +35,7 @@
       {% for language in language_list %}
       <tr>
         <td>{{ language.name|title }}</td>
+        <td>{{ language.pending_count|default:"0" }}</td>
         <td>{{ language.approved_count|default:"0" }}</td>
         <td>{{ language.rejected_count|default:"0" }}</td>
         <td>{{ language.total_count|default:"0" }}</td>

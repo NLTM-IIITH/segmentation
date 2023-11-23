@@ -35,6 +35,7 @@ class QCStatsView(BaseStatsView, TemplateView):
 		ret = ret.values('language').annotate(
 			name=F('language'),
 			total_count=Count('id'),
+			pending_count=Count('id', filter=Q(qc_status='')),
 			approved_count=Count('id', filter=Q(qc_status='approved')),
 			rejected_count=Count('id', filter=Q(qc_status='rejected')),
 			# **self.create_count_annotations([
