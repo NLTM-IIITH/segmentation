@@ -12,6 +12,7 @@ class CustomDir:
 
 
 def send_to_verification(ver: list[tuple]):
+	print(f'Preparing to send {len(ver)} words to verification portal')
 	tmp = TemporaryDirectory(prefix='ver')
 	folder = tmp.name
 	folder = join(folder, 'test')
@@ -23,6 +24,7 @@ def send_to_verification(ver: list[tuple]):
 	for word, ocr in ver:
 		os.system(f'cp {word.image.path} {image_folder}') # type: ignore
 		ret.append(f'image/{word.id}.jpg\t{ocr.strip()}') # type: ignore
+	print(f'Saved the words at {folder}')
 	with open(join(folder, 'gt.txt'), 'w', encoding='utf-8') as f:
 		f.write('\n'.join(ret))
 	# print('added all the images and gt file to the folders')
