@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block custom_css %}
+<link href="https://unpkg.com/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker3.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block custom_js %}
+<script src="https://unpkg.com/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
+<script>
+  $(document).ready(function() {
+    $('.date input').datepicker({
+      todayBtn: "linked",
+      autoclose: true,
+      format: "dd/mm/yyyy",
+      todayHighlight: true
+    });
+  });
+</script>
+{% endblock %}
+
+{% block main_content %}
+<div class="container my-2">
+  <div class="my-3 col-4">
+    <form method="get">
+      <div class="input-group input-group-sm date">
+        <input name="date" type="text" class="form-control" placeholder="Enter the date to filter">
+        <div class="input-group-append">
+          <button type="submit" class="btn btn-outline-info" type="button">GO!</button>
+          <a class="btn btn-outline-info" href="?date=">Reset</a>
+        </div>
+      </div>
+    </form>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Last Activity</th>
+        <th>Language</th>
+        <th>Category</th>
+        <th>Corrected Pages</th>
+        <th>Skipped Pages</th>
+        <th>Total Pages</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in user_list %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.name }}</td>
+        <td>{{ user.last_activity|naturaltime }}</td>
+        <td>{{ user.language|title|default:"N/A" }}</td>
+        <td>{{ user.category|title|default:"N/A" }}</td>
+        <td>{{ user.corrected_count|default:"0" }}</td>
+        <td>{{ user.skipped_count|default:"0" }}</td>
+        <td>{{ user.total_count|default:"0" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th></th>
+        <th>{{ final_count.corrected_total|default:"0" }}</th>
+        <th>{{ final_count.skipped_total|default:"0" }}</th>
+        <th>{{ final_count.grand_total|default:"0" }}</th>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+{% endblock main_content %}

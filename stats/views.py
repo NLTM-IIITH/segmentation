@@ -1,7 +1,8 @@
+from datetime import date
 from typing import Any, Optional
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.db.models import Count, F, Q
+from django.db.models import Count, F, Q, Sum
 from django.views.generic import TemplateView
 
 from page.models import Page
@@ -22,6 +23,16 @@ class BaseStatsView(LoginRequiredMixin, UserPassesTestMixin):
 				filter=Q(status=i)
 			)
 		return ret
+
+	def get_date(self) -> date:
+		requested_date = self.request.GET.get('date', '') # type: ignore
+		if requested_date:
+			requested_date = requested_date.strip('/ ').split('/')[::-1]
+			requested_date = list(map(int, requested_date))
+			requested_date = date(*requested_date)
+		else:
+			requested_date = date.today()
+		return requested_date
 
 
 class QCStatsView(BaseStatsView, TemplateView):
@@ -102,4 +113,115 @@ class LanguageStatsView(BaseStatsView, TemplateView):
 			'category_list': Page.get_all_categories(),
 		})
 		print(kwargs)
+		return super().get_context_data(**kwargs)
+
+
+class MonthUserStatsView(BaseStatsView, TemplateView):
+	template_name = 'stats/month_user.html'
+
+	def get_context_data(self, **kwargs):
+		requested_date = self.get_date()
+		temp = Page.objects \
+			.exclude(user=None) \
+			.filter(corrected_timestamp__date__month=requested_date.month) \
+			.filter(corrected_timestamp__date__year=requested_date.year) \
+			.values('user') \
+			.annotate(
+				name=F('user__username'),
+				id=F('user__id'),
+				total_count=Count('id'),
+				**self.create_count_annotations([
+					'corrected',
+					'skipped'
+				])
+			).order_by('id')
+		final_count = temp.aggregate(
+			corrected_total=Sum('corrected_count'),
+			skipped_total=Sum('skipped_count'),
+			grand_total=Sum('total_count'),
+		)
+		ret = []
+		for i in temp:
+			x = dict(i)
+			user = User.objects.get(pk=x['user'])
+			x['last_activity'] = user.last_activity
+			x['language'] = user.pages.order_by('corrected_timestamp').last().language # type: ignore
+			x['category'] = user.pages.order_by('corrected_timestamp').last().category # type: ignore
+			x['pk'] = user.pk
+			ret.append(x)
+		kwargs.update({
+			'user_list': sorted(ret, key=lambda x:x['name'].lower()),
+			'final_count': final_count
+		})
+		return super().get_context_data(**kwargs)
+
+class MonthLanguageStatsView(BaseStatsView, TemplateView):
+	template_name = 'stats/month_language.html'
+
+	def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+		requested_date = self.get_date()
+		category = self.request.GET.get('category', '')
+		ret = Page.objects.all()
+		if category:
+			ret = ret.filter(category=category)
+		ret = ret.filter(
+			corrected_timestamp__date__month=requested_date.month,
+			corrected_timestamp__date__year=requested_date.year,
+		)
+		ret = ret.values('language').annotate(
+			name=F('language'),
+			total_count=Count('id'),
+			**self.create_count_annotations([
+				'corrected',
+				'skipped',
+			])
+		)
+		kwargs.update({
+			'language_list': ret,
+			'category': category,
+			'category_list': Page.get_all_categories(),
+			'requested_date': '{}%2F{}%2F{}'.format(
+				requested_date.day,
+				requested_date.month,
+				requested_date.year
+			)
+		})
+		return super().get_context_data(**kwargs)
+
+class DayStatsView(BaseStatsView, TemplateView):
+	template_name = 'stats/day.html'
+
+	def get_context_data(self, **kwargs):
+		requested_date = self.get_date()
+		temp = Page.objects \
+			.exclude(user=None) \
+			.filter(corrected_timestamp__date=requested_date) \
+			.values('user') \
+			.annotate(
+				name=F('user__username'),
+				id=F('user__id'),
+				total_count=Count('id'),
+				**self.create_count_annotations([
+					'corrected',
+					'skipped'
+				])
+			).order_by('id')
+		final_count = temp.aggregate(
+			corrected_total=Sum('corrected_count'),
+			skipped_total=Sum('skipped_count'),
+			grand_total=Sum('total_count'),
+		)
+		ret = []
+		for i in temp:
+			x = dict(i)
+			user = User.objects.get(pk=x['user'])
+			x['last_activity'] = user.last_activity
+			x['language'] = user.pages.order_by('corrected_timestamp').last().language # type: ignore
+			x['category'] = user.pages.order_by('corrected_timestamp').last().category # type: ignore
+			x['pk'] = user.pk
+			ret.append(x)
+		kwargs.update({
+			'user_list': sorted(ret, key=lambda x:x['name'].lower()),
+			'final_count': final_count
+		})
 		return super().get_context_data(**kwargs)
