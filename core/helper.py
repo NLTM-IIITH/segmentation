@@ -58,10 +58,10 @@ def handle_upload_zipfile(
 	return (total, failed)
 
 
-def download_pages(pages, folder_name):
+def download_pages(pages, folder_name, include_gt: bool = False, include_visual: bool = False):
 	tmp = TemporaryDirectory(prefix='download')
 	folder = join(tmp.name, folder_name)
 	os.makedirs(folder)
-	pages.export_all_language(folder)
+	pages.export_all_language(folder, include_gt, include_visual)
 	os.system(f'cd {tmp.name} && zip -r {folder_name}.zip {folder_name} && cd -')
 	return FileResponse(open(f'{folder}.zip', 'rb'))

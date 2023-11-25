@@ -256,13 +256,16 @@ class Page(BaseModel):
 		self.sent_timestamp = timezone.localtime()
 		self.save()
 
-	def export(self, image_path: str, gt_path: str):
-		self.save_image(image_path)
-		ret = []
-		for i in self.words.all():
-			ret.append(f'{i.x}\t{i.y}\t{i.w}\t{i.h}')
-		with open(join(gt_path, f'{self.id}.txt'), 'w', encoding='utf-8') as f:
-			f.write('\n'.join(ret))
+	def export(self, image_folder: str, gt_folder: str = '', visual_folder: str = ''):
+		self.save_image(image_folder)
+		if gt_folder:
+			ret = []
+			for i in self.words.all():
+				ret.append(f'{i.x}\t{i.y}\t{i.w}\t{i.h}')
+			with open(join(gt_folder, f'{self.id}.txt'), 'w', encoding='utf-8') as f:
+				f.write('\n'.join(ret))
+		if visual_folder:
+			self.save_visualized_image(visual_folder)
 
 	@transaction.atomic
 	def get_annotations(self):
@@ -293,6 +296,34 @@ class Page(BaseModel):
 			print(e)
 			return ''
 		return path
+
+	def save_visualized_image(self, path: str) -> str:
+		"""Creates the visualization of the words bboxes in the original page
+		level image and saves it in the given path.
+		Image is by default stored as path/<id>.jpg
+
+		Args:
+			path (str): Path to the folder where to save the image
+
+		Returns:
+			str: Returns the complete path of the stored image
+		"""
+		if not self.words.exists(): # type: ignore
+			return ''
+		img = cv2.imread(self.image.path)
+		for i in self.words.all():
+			coords = i.get_crop_coords()
+			img = cv2.rectangle(
+				img,
+				(coords[0], coords[1]),
+				(coords[2], coords[3]),
+				(0,0,255),
+				3
+			)
+		path = join(path, f'{self.id}.jpg') # type: ignore
+		cv2.imwrite(path, img)
+		return path
+
 
 	def perform_layout_parser(self):
 		"""
