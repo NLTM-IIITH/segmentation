@@ -288,7 +288,6 @@ class Page(BaseModel):
 		path = join(path, f'{self.id}.jpg') # type: ignore
 		try:
 			img = Image.open(self.image.path)
-			print('image is read')
 			img.convert('RGB').save(path)
 		except Exception as e:
 			print(e)

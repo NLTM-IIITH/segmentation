@@ -280,10 +280,13 @@ class DownloadView(BaseCoreView, TemplateView):
 		category = self.request.POST.get('category')
 		status = self.request.POST.get('status', 'segmented')
 		print(status, language, category)
-		pages = Page.objects.filter(
-			status=status,
-			category=category,
-		)
+		if status == 'qc_approved':
+			pages = Page.objects.filter(qc_status='approved')
+		elif status == 'qc_rejected':
+			pages = Page.objects.filter(qc_status='rejected')
+		else:
+			pages = Page.objects.filter(status=status)
+		pages = pages.filter(category=category)
 		if language:
 			pages = pages.filter(language=language)
 		messages.success(
