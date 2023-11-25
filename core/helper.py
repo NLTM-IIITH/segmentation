@@ -5,6 +5,7 @@ from tempfile import TemporaryDirectory
 from typing import Tuple
 
 from django.core.files import File
+from django.http import FileResponse
 
 from page.models import Page
 
@@ -55,3 +56,12 @@ def handle_upload_zipfile(
 			total += 1
 	Page.objects.bulk_create(pages)
 	return (total, failed)
+
+
+def download_pages(pages, folder_name):
+	tmp = TemporaryDirectory(prefix='download')
+	folder = join(tmp.name, folder_name)
+	os.makedirs(folder)
+	pages.export_all_language(folder)
+	os.system(f'cd {tmp.name} && zip -r {folder_name}.zip {folder_name} && cd -')
+	return FileResponse(open(f'{folder}.zip', 'rb'))

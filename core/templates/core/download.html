@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block main_content %}
+<div class="container mt-4">
+  <form method="post">
+    {% csrf_token %}
+    <div class="row mb-3">
+      <label for="id_language" class="col-sm-3 col-form-label">Status</label>
+      <div class="col-sm-6">
+        <select class="form-select" name="status" id="id_status">
+          {% for name, status in status_list %}
+          <option value="{{ name }}">{{ status }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="id_category" class="col-sm-3 col-form-label">Category</label>
+      <div class="col-sm-6">
+        <select class="form-select" name="category" id="id_category">
+          {% for category, count in category_list %}
+          <option value="{{ category }}">{{ category }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="row mb-3">
+      <label for="id_language" class="col-sm-3 col-form-label">Language</label>
+      <div class="col-sm-6">
+        <select class="form-select" name="language" id="id_language">
+          {% for name, language in language_list %}
+          <option value="{{ name }}">{{ language }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-info"><i class="fa fa-download"></i> Download</button>
+  </form>
+</div>
+{% endblock main_content %}

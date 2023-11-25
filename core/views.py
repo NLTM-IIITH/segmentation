@@ -16,7 +16,7 @@ from core.tasks import perform_segment_bulk
 from page.models import Page
 from word.models import Word
 
-from .helper import handle_upload_zipfile
+from .helper import download_pages, handle_upload_zipfile
 from .tasks import send_to_verification
 
 User = get_user_model()
@@ -270,3 +270,32 @@ class SendToVerificationView(BaseCoreView, TemplateView):
 		})
 		return super().get_context_data(**kwargs)
 	
+
+class DownloadView(BaseCoreView, TemplateView):
+	template_name = 'core/download.html'
+	navigation = 'download'
+
+	def post(self, *args, **kwargs):
+		language = self.request.POST.get('language', '')
+		category = self.request.POST.get('category')
+		status = self.request.POST.get('status', 'segmented')
+		print(status, language, category)
+		pages = Page.objects.filter(
+			status=status,
+			category=category,
+		)
+		if language:
+			pages = pages.filter(language=language)
+		messages.success(
+			self.request,
+			f'Downloaded {pages.count()} pages.'
+		)
+		return download_pages(pages, f'{category}-{status}')
+
+	def get_context_data(self, **kwargs):
+		kwargs.update({
+			'language_list': [tuple(i) for i in Page.LANGUAGE_CHOICES],
+			'status_list': [tuple(i) for i in Page.STATUS_CHOICES],
+			'category_list': Page.get_all_categories(False),
+		})
+		return super().get_context_data(**kwargs)

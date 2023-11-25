@@ -11,6 +11,7 @@ urlpatterns = [
 	path('assign/', views.AssignView.as_view(), name='assign'),
 	path('upload/', views.UploadView.as_view(), name='upload'),
 	path('segment/', views.SegmentView.as_view(), name='segment'),
+	path('download/', views.DownloadView.as_view(), name='download'),
 
 	path('qc/', views.QCView.as_view(), name='qc'),
 

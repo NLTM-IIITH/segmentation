@@ -51,6 +51,14 @@ class PageQuerySet(BaseQuerySet):
 		for i in tqdm(self.all()):
 			i.export(image_folder, gt_folder)
 
+	def export_all_language(self, path: str):
+		language_list = self.all().values_list('language', flat=True).distinct()
+		print(f'Found {len(language_list)} languages in the Queryset')
+		for language in language_list:
+			if not os.path.exists(join(path, language)):
+				os.makedirs(join(path, language))
+			self.filter(language=language).export(join(path, language))
+
 	def unassign(self) -> None:
 		"""
 		Removes the assigned status for all the pages.

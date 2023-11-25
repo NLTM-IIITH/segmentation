@@ -8,7 +8,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models, transaction
 from django.utils import timezone
-from PIL import Image
+from PIL import Image, ImageFile
+
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 from api.layout import LayoutAPI
 from core.models import BaseModel
@@ -286,8 +288,10 @@ class Page(BaseModel):
 		path = join(path, f'{self.id}.jpg') # type: ignore
 		try:
 			img = Image.open(self.image.path)
+			print('image is read')
 			img.convert('RGB').save(path)
-		except:
+		except Exception as e:
+			print(e)
 			return ''
 		return path
 
@@ -308,15 +312,18 @@ class Page(BaseModel):
 			)
 
 	@staticmethod
-	def get_all_categories(**kwargs) -> list[tuple[str, int]]:
+	def get_all_categories(include_count: bool = True, **kwargs) -> list[tuple[str, int]]:
 		ret = Page.objects.filter(**kwargs)
 		ret = ret.values_list('category', flat=True).distinct()
 		ret = [[i] for i in ret]
 		for i in ret:
-			i.append(Page.objects.filter(
-				category=i[0],
-				**kwargs
-			).count())
+			if include_count:
+				i.append(Page.objects.filter(
+					category=i[0],
+					**kwargs
+				).count())
+			else:
+				i.append(0)
 		ret = [tuple(i) for i in ret]
 		return ret
 
