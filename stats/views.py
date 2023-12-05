@@ -131,13 +131,17 @@ class MonthUserStatsView(BaseStatsView, TemplateView):
 				id=F('user__id'),
 				total_count=Count('id'),
 				**self.create_count_annotations([
+					'segmented',
 					'corrected',
-					'skipped'
+					'skipped',
+					'sent',
 				])
 			).order_by('id')
 		final_count = temp.aggregate(
+			segmented_total=Sum('segmented_count'),
 			corrected_total=Sum('corrected_count'),
 			skipped_total=Sum('skipped_count'),
+			sent_total=Sum('sent_count'),
 			grand_total=Sum('total_count'),
 		)
 		ret = []
@@ -172,8 +176,10 @@ class MonthLanguageStatsView(BaseStatsView, TemplateView):
 			name=F('language'),
 			total_count=Count('id'),
 			**self.create_count_annotations([
+				'segmented',
 				'corrected',
 				'skipped',
+				'sent',
 			])
 		)
 		kwargs.update({

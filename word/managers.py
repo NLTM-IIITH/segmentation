@@ -8,6 +8,7 @@ from typing import Any
 
 from django.contrib.auth import get_user_model
 from django.core.files import File
+from django.db.models import Q
 from PIL import Image
 
 from api.crowd import CrowdAPI
@@ -85,6 +86,20 @@ class WordQuerySet(BaseQuerySet):
 			points += word.update_points(save=False)
 		if points:
 			points[0]._meta.model.objects.bulk_create(points)
+
+	def clean(self) -> None:
+		"""Function responsible to check all the words
+		and ensure that any word not meeting the following criteria is removed
+
+		Criterias to check:
+		- Width should be > 0
+		- Height should be > 0
+		"""
+		ret = self.all().filter(
+			Q(w__lte=0) | \
+			Q(h__lte=0)
+		)
+		ret.delete()
 
 
 	def update_cropped_images(self) -> None:

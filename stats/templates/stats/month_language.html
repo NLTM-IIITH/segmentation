@@ -55,8 +55,10 @@
     <thead>
       <tr>
         <th>Language</th>
+        <th>Segmented Pages</th>
         <th>Corrected Pages</th>
         <th>Skipped Pages</th>
+        <th>Sent Pages</th>
         <th>Total Pages</th>
       </tr>
     </thead>
@@ -64,8 +66,10 @@
       {% for language in language_list %}
       <tr>
         <td>{{ language.name|title }}</td>
+        <td>{{ language.segmented_count|default:"0" }}</td>
         <td>{{ language.corrected_count|default:"0" }}</td>
         <td>{{ language.skipped_count|default:"0" }}</td>
+        <td>{{ language.sent_count|default:"0" }}</td>
         <td>{{ language.total_count|default:"0" }}</td>
       </tr>
       {% endfor %}

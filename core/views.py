@@ -107,6 +107,7 @@ class SegmentSaveView(BaseCoreView, TemplateView):
 		print('Got the data')
 		data = json.loads(request.body.decode('utf-8'))
 		page: Page = Page.objects.get(id=int(data['page_id']))
+		print(int(data['page_id']))
 		data = data['data']
 		ndelete, _ = page.words.all().delete() # type: ignore
 		print(f'Deleted {ndelete} words after annotation')
@@ -114,6 +115,7 @@ class SegmentSaveView(BaseCoreView, TemplateView):
 		Word.bulk_update_from_lsf(data, page)
 		print('updated/created the remaining words')
 
+		page.words.all().clean() # type: ignore
 		page.words.all().update_cropped_images() # type: ignore	
 		print('saved all word level cropped images')
 		page.status = 'corrected'
