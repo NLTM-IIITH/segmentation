@@ -10,6 +10,8 @@ class CrowdAPI:
 		if response.ok:
 			ret = response.json()
 			return ret['gt'].strip()
+		else:
+			return ''
 
 	@staticmethod
 	def get_ilocr_vocab(parent) -> str:

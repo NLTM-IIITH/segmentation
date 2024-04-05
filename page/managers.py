@@ -41,7 +41,7 @@ class PageQuerySet(BaseQuerySet):
 			('user', 'polygon', 'assigned_timestamp', 'status')
 		)
 
-	def export(self, path: str, include_gt: bool = True, include_visual: bool = False):
+	def export(self, path: str, include_gt: bool = True, include_visual: bool = False, use_parent: bool = False):
 		image_folder = gt_folder = visual_folder = ''
 		image_folder = join(path, 'images')
 		if not os.path.exists(image_folder):
@@ -55,9 +55,9 @@ class PageQuerySet(BaseQuerySet):
 			if not os.path.exists(visual_folder):
 				os.makedirs(visual_folder)
 		for i in tqdm(self.all()):
-			i.export(image_folder, gt_folder, visual_folder)
+			i.export(image_folder, gt_folder, visual_folder, use_parent)
 
-	def export_all_language(self, path: str, include_gt: bool = True, include_visual: bool = False):
+	def export_all_language(self, path: str, include_gt: bool = True, include_visual: bool = False, use_parent: bool = False):
 		language_list = self.all().values_list('language', flat=True).distinct()
 		print(f'Found {len(language_list)} languages in the Queryset')
 		for language in language_list:
@@ -66,7 +66,8 @@ class PageQuerySet(BaseQuerySet):
 			self.filter(language=language).export(
 				join(path, language),
 				include_gt,
-				include_visual
+				include_visual,
+				use_parent
 			)
 
 	def unassign(self) -> None:

@@ -12,6 +12,7 @@ from PIL import Image, ImageFile
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
+from api.crowd import CrowdAPI
 from api.layout import LayoutAPI
 from core.models import BaseModel
 from word.models import Word
@@ -256,16 +257,21 @@ class Page(BaseModel):
 		self.sent_timestamp = timezone.localtime()
 		self.save()
 
-	def export(self, image_folder: str, gt_folder: str = '', visual_folder: str = ''):
-		self.save_image(image_folder)
+	def export(self, image_folder: str, gt_folder: str = '', visual_folder: str = '', use_parent: bool = False):
+		self.save_image(image_folder, use_parent)
 		if gt_folder:
-			ret = []
-			for i in self.words.all():
-				ret.append(f'{i.x}\t{i.y}\t{i.w}\t{i.h}')
-			with open(join(gt_folder, f'{self.id}.txt'), 'w', encoding='utf-8') as f:
-				f.write('\n'.join(ret))
+			# ret = []
+			# for i in self.words.all():
+			# 	ret.append(f'{i.x}\t{i.y}\t{i.w}\t{i.h}')
+			if use_parent:
+				gt_path = join(gt_folder, f'{self.parent}.txt')
+			else:
+				gt_path = join(gt_folder, f'{self.id}.txt')
+			with open(gt_path, 'w', encoding='utf-8') as f:
+				# f.write('\n'.join(ret))
+				f.write(CrowdAPI.get_vocab(self.parent))
 		if visual_folder:
-			self.save_visualized_image(visual_folder)
+			self.save_visualized_image(visual_folder, use_parent)
 
 	@transaction.atomic
 	def get_annotations(self):
@@ -283,12 +289,15 @@ class Page(BaseModel):
 		}
 		return ret
 
-	def save_image(self, path: str) -> str:
+	def save_image(self, path: str, use_parent: bool = False) -> str:
 		"""
 		fetches the original page, crop out the region part 
 		and save the region image in the specified path
 		"""
-		path = join(path, f'{self.id}.jpg') # type: ignore
+		if use_parent:
+			path = join(path, f'{self.parent}.jpg') # type: ignore
+		else:
+			path = join(path, f'{self.id}.jpg') # type: ignore
 		try:
 			img = Image.open(self.image.path)
 			img.convert('RGB').save(path)
@@ -297,7 +306,7 @@ class Page(BaseModel):
 			return ''
 		return path
 
-	def save_visualized_image(self, path: str) -> str:
+	def save_visualized_image(self, path: str, use_parent: bool = False) -> str:
 		"""Creates the visualization of the words bboxes in the original page
 		level image and saves it in the given path.
 		Image is by default stored as path/<id>.jpg
@@ -320,7 +329,10 @@ class Page(BaseModel):
 				(0,0,255),
 				3
 			)
-		path = join(path, f'{self.id}.jpg') # type: ignore
+		if use_parent:
+			path = join(path, f'{self.parent}.jpg') # type: ignore
+		else:
+			path = join(path, f'{self.id}.jpg') # type: ignore
 		cv2.imwrite(path, img)
 		return path
 
