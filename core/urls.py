@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import api_views, views
 
 app_name = 'core'
 urlpatterns = [
@@ -16,4 +16,6 @@ urlpatterns = [
 	path('qc/', views.QCView.as_view(), name='qc'),
 
 	path('send_to_verification/', views.SendToVerificationView.as_view(), name='send-to-verification'),
+
+	path('api/upload/', api_views.UploadView.as_view(), name='api-upload'),
 ]
