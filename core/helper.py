@@ -64,19 +64,23 @@ def handle_upload_zipfile(
 						try:
 							word = Word(
 								page=page,
-								x=i[0], y=[1],
+								x=i[0], y=i[1],
 								w=i[2], h=i[3],
 								line=i[4],
 							)
 							point_list += word.update_points(save=False)
 							word_list.append(word)
 						except Exception as e:
+							print(i)
+							raise e
 							print(e)
 					page.status = 'segmented'
 			except Exception as e:
+				raise e
 				print(e)
 			pages.append(page)
-		except:
+		except Exception as e:
+			raise e
 			failed += 1
 		finally:
 			total += 1
