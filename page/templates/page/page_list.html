@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block main_content %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Image</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for page in page_list %}
+          <tr>
+            <td>{{ page.id }}</td>
+            <td>
+              <a href="{{ page.image.url }}" alt="Page Image" target="_blank">Image</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

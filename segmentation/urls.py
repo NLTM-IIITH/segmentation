@@ -20,6 +20,7 @@ from django.urls import include, path
 
 urlpatterns = [
     path('segmentation/', include('core.urls')),
+    path('segmentation/page/', include('page.urls')),
     path('segmentation/user/', include('user.urls')),
     path('segmentation/stats/', include('stats.urls')),
     path('segmentation/admin/', admin.site.urls),
