@@ -22,6 +22,44 @@ class BaseCoreView(LoginRequiredMixin):
     pass
 
 @method_decorator(csrf_exempt, name='dispatch')
+class FetchView(View):
+    def get(self, *args, **kwargs):
+        try:
+            id = int(self.request.GET.get('id', 0))
+            if not id:
+                raise ValueError('PageID not valid')
+            page = Page.objects.filter(parent=str(id))
+            if not page.exists():
+                raise ValueError('No page with this ID')
+            if page.count() > 1:
+                raise ValueError('Multiple pages found with this parent ID')
+            page = page[0]
+            if page.status not in ('corrected', 'skipped'):
+                raise ValueError('Page not processed yet')
+            return JsonResponse({
+                'status': 'OK',
+                'page': {
+                    'status': page.status,
+                    'words': page.words.all().to_dict()
+                }
+            })
+        except ValueError as e:
+            return JsonResponse({
+                'status': 'ERR',
+                'message': str(e),
+            })
+        except Exception as e:
+            return JsonResponse({
+                'status': 'ERR',
+                'message': f'Unknown Exception: {str(e)}',
+            })
+        return JsonResponse({
+            'status': 'OK',
+            'message': f'PageID = {id}'
+        })
+
+
+@method_decorator(csrf_exempt, name='dispatch')
 class UploadView(View):
 
     def post(self, *args, **kwargs):

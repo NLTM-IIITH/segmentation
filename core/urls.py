@@ -18,4 +18,5 @@ urlpatterns = [
     path('send_to_verification/', views.SendToVerificationView.as_view(), name='send-to-verification'),
 
     path('api/upload/', api_views.UploadView.as_view(), name='api-upload'),
+    path('api/fetch/', api_views.FetchView.as_view(), name='api-fetch'),
 ]

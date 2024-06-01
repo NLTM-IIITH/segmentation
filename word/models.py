@@ -81,6 +81,12 @@ class Word(BaseModel):
     def __repr__(self) -> str:
         return f'<Word: {self.status}>'
 
+    def to_dict(self, fields: tuple = ('x', 'y', 'w', 'h', 'line',)) -> dict:
+        ret = {}
+        for i in fields:
+            ret[i] = getattr(self, i)
+        return ret
+
     def update_points(self, save: bool = True) -> list[Point]:
         ret = [
             Point(word=self, x=self.x, y=self.y),
