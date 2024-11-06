@@ -91,9 +91,15 @@ def handle_upload_zipfile(
 
 
 def download_pages(pages, folder_name, include_gt: bool = False, include_visual: bool = False):
+	folder_name = folder_name.strip()
+	while ' ' in folder_name:
+		folder_name = folder_name.replace(' ', '_')
+	while '.' in folder_name:
+		folder_name = folder_name.replace('.', '')
 	tmp = TemporaryDirectory(prefix='download')
 	folder = join(tmp.name, folder_name)
 	os.makedirs(folder)
 	pages.export_all_language(folder, include_gt, include_visual)
+	print('exporting the pages')
 	os.system(f'cd {tmp.name} && zip -r {folder_name}.zip {folder_name} && cd -')
 	return FileResponse(open(f'{folder}.zip', 'rb'))

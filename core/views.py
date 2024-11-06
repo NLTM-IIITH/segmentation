@@ -1,6 +1,7 @@
 import json
 from typing import Any, Dict
 
+from api.crowd import CrowdAPI
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -10,11 +11,10 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
-
-from api.crowd import CrowdAPI
-from core.tasks import perform_segment_bulk
 from page.models import Page
 from word.models import Word
+
+from core.tasks import perform_segment_bulk
 
 from .helper import download_pages, handle_upload_zipfile
 from .tasks import send_to_verification
@@ -176,14 +176,19 @@ class AssignView(BaseCoreView, TemplateView):
         count = int(self.request.POST.get('count', 0))
         type = self.request.POST.get('type', 'rectangle')
         print(user, language, category, count, type)
-        Page.objects.filter(
-            language=language,
+        pages = Page.objects.filter(
             status='segmented',
             category=category,
-        )[:count].assign(user, type == 'polygon') # type: ignore
+        )
+        if language:
+            pages = pages.filter(language=language)
+        if count:
+            pages = pages[:count]
+        assign_count = pages.count()
+        pages.assign(user, type == 'polygon')
         messages.success(
             self.request,
-            f'Assigned {count} pages to {user}'
+            f'Assigned {assign_count} pages to {user}'
         )
         return redirect('core:assign')
 
@@ -297,6 +302,45 @@ class DownloadView(BaseCoreView, TemplateView):
             f'Downloaded {pages.count()} pages.'
         )
         return download_pages(pages, f'{category}-{status}', include_gt, include_visual)
+
+    def get_context_data(self, **kwargs):
+        kwargs.update({
+            'language_list': [tuple(i) for i in Page.LANGUAGE_CHOICES],
+            'status_list': [tuple(i) for i in Page.STATUS_CHOICES],
+            'category_list': Page.get_all_categories(False),
+        })
+        return super().get_context_data(**kwargs)
+
+
+class ConvertView(BaseCoreView, TemplateView):
+    template_name = 'core/convert.html'
+    navigation = 'convert'
+
+    def post(self, *args, **kwargs):
+        language = self.request.POST.get('language', '')
+        category = self.request.POST.get('category')
+        status = self.request.POST.get('status', 'segmented')
+        convert_status = self.request.POST.get('convert_status', '')
+        # include_gt = self.request.POST.get('include_gt') == 'on'
+        # include_visual = self.request.POST.get('include_visual') == 'on'
+        print(status, language, category, convert_status)
+        pages = Page.objects.filter(category=category)
+        if language:
+            pages = pages.filter(language=language)
+        if status:
+            pages = pages.filter(status=status)
+        if convert_status:
+            pages.update(status=convert_status)
+            messages.success(
+                self.request,
+                f'converted {pages.count()} pages to {convert_status}.'
+            )
+        else:
+            messages.success(
+                self.request,
+                f'Aborted. Please specify the convert status.'
+            )
+        return redirect('core:convert')
 
     def get_context_data(self, **kwargs):
         kwargs.update({

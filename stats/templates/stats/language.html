@@ -25,7 +25,6 @@
     <thead>
       <tr>
         <th>Language</th>
-        <th>New Pages</th>
         <th>Segmented Pages</th>
         <th>Assigned Pages</th>
         <th>Corrected Pages</th>
@@ -38,7 +37,6 @@
       {% for language in language_list %}
       <tr>
         <td>{{ language.name|title }}</td>
-        <td>{{ language.new_count|default:"0" }}</td>
         <td>{{ language.segmented_count|default:"0" }}</td>
         <td>{{ language.assigned_count|default:"0" }}</td>
         <td>{{ language.corrected_count|default:"0" }}</td>

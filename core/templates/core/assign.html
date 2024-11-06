@@ -10,7 +10,7 @@
       <div class="col-sm-6">
         <select class="form-select" name="category" id="id_category">
           {% for category, count in category_list %}
-          <option value="{{ category }}">{{ category }} ({{ count }})</option>
+          <option value="{{ category }}">{{ category }}</option>
           {% endfor %}
         </select>
       </div>
@@ -20,7 +20,7 @@
       <div class="col-sm-6">
         <select class="form-select" name="language" id="id_language">
           {% for name, language, count in language_list %}
-          <option value="{{ name }}">{{ language }} ({{ count }})</option>
+	  <option value="{{ name }}">{{ language }}</option>
           {% endfor %}
         </select>
       </div>
