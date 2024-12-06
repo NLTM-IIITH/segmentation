@@ -112,7 +112,6 @@ class LanguageStatsView(BaseStatsView, TemplateView):
 			'category': category,
 			'category_list': Page.get_all_categories(),
 		})
-		print(kwargs)
 		return super().get_context_data(**kwargs)
 
 
