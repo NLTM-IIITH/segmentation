@@ -1,7 +1,6 @@
 import json
 from typing import Any, Dict
 
-from api.crowd import CrowdAPI
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -11,10 +10,11 @@ from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import TemplateView
+
+from api.crowd import CrowdAPI
+from core.tasks import perform_segment_bulk
 from page.models import Page
 from word.models import Word
-
-from core.tasks import perform_segment_bulk
 
 from .helper import download_pages, handle_upload_zipfile
 from .tasks import send_to_verification
@@ -317,23 +317,28 @@ class ConvertView(BaseCoreView, TemplateView):
     navigation = 'convert'
 
     def post(self, *args, **kwargs):
-        language = self.request.POST.get('language', '')
         category = self.request.POST.get('category')
+        language = self.request.POST.get('language', '')
         status = self.request.POST.get('status', 'segmented')
         convert_status = self.request.POST.get('convert_status', '')
-        # include_gt = self.request.POST.get('include_gt') == 'on'
-        # include_visual = self.request.POST.get('include_visual') == 'on'
         print(status, language, category, convert_status)
         pages = Page.objects.filter(category=category)
         if language:
             pages = pages.filter(language=language)
         if status:
             pages = pages.filter(status=status)
-        if convert_status:
+        page_count = pages.count()
+        if convert_status and convert_status == 'delete':
+            pages.delete()
+            messages.success(
+                self.request,
+                f'Deleted {page_count} pages.'
+            )
+        elif convert_status:
             pages.update(status=convert_status)
             messages.success(
                 self.request,
-                f'converted {pages.count()} pages to {convert_status}.'
+                f'converted {page_count} pages to {convert_status}.'
             )
         else:
             messages.success(

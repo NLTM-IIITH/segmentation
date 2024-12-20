@@ -14,7 +14,7 @@
         {% endif %}
       </button>
       <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-        <li><a class="dropdown-item" href="?">All</a></li>
+        <li><a class="dropdown-item" href="?category=all">All</a></li>
         {% for i, _ in category_list %}
         <li><a class="dropdown-item {% if i == category %}active{% endif %}" href="?category={{ i }}">{{ i }}</a></li>
         {% endfor %}

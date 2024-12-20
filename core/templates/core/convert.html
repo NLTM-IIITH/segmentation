@@ -42,10 +42,11 @@
           {% for name, status in status_list %}
           <option value="{{ name }}">{{ status }}</option>
           {% endfor %}
+          <option class="bg-danger" value="delete">Delete</option>
         </select>
       </div>
     </div>
-    <button type="submit" class="btn btn-info"><i class="fa fa-download"></i> Convert</button>
+    <button type="submit" class="btn btn-info"><i class="fa fa-retweet"></i> Convert</button>
   </form>
 </div>
 {% endblock main_content %}
