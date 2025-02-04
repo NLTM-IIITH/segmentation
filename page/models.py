@@ -1,4 +1,5 @@
 import base64
+import json
 import shutil
 from os.path import basename, join
 from tempfile import TemporaryDirectory
@@ -260,16 +261,17 @@ class Page(BaseModel):
     def export(self, image_folder: str, gt_folder: str = '', visual_folder: str = '', use_parent: bool = False):
         self.save_image(image_folder, use_parent)
         if gt_folder:
-            # ret = []
-            # for i in self.words.all():
-            # 	ret.append(f'{i.x}\t{i.y}\t{i.w}\t{i.h}')
             if use_parent:
-                gt_path = join(gt_folder, f'{self.parent}.txt')
+                gt_path = join(gt_folder, f'{self.parent}.json')
             else:
-                gt_path = join(gt_folder, f'{self.id}.txt')
+                gt_path = join(gt_folder, f'{self.id}.json')
             with open(gt_path, 'w', encoding='utf-8') as f:
-                # f.write('\n'.join(ret))
-                f.write(CrowdAPI.get_vocab(self.parent))
+                f.write(json.dumps(
+                    {'words': list(self.words.values(
+                        'x', 'y', 'w', 'h'
+                    ))},
+                    indent=4,
+                ))
         if visual_folder:
             self.save_visualized_image(visual_folder, use_parent)
 
@@ -367,7 +369,7 @@ class Page(BaseModel):
             else:
                 i.append(0)
         ret = [tuple(i) for i in ret]
-        return ret
+        return list(reversed(ret))
 
     @transaction.atomic
     def approve(self, user):

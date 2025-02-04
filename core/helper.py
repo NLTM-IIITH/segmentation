@@ -1,3 +1,4 @@
+import json
 import os
 import zipfile
 from os.path import basename, join, splitext
@@ -37,26 +38,28 @@ def handle_upload_zipfile(
 	image_files = [i for i in all_files if splitext(i)[1] in ('.jpg', '.jpeg', '.png')]
 	txt_files = [i for i in all_files if splitext(i)[1] == '.txt']
 	txt_files = {splitext(basename(i))[0]: i for i in txt_files}
-	print(image_files)
+	json_files = [i for i in all_files if splitext(i)[1] == '.json']
+	json_files = {splitext(basename(i))[0]: i for i in json_files}
+	print(image_files, txt_files, json_files)
 	pages = []
 	word_list = []
 	point_list = []
 	total = failed = 0
-	for i in image_files:
+	for image in image_files:
 		try:
 			page = Page(
 				language=language,
 				category=category,
-				parent=splitext(basename(i))[0].strip()
+				parent=splitext(basename(image))[0].strip()
 			)
 			page.image.save(
-				basename(i),
-				File(open(i, 'rb')),
+				basename(image),
+				File(open(image, 'rb')),
 				save=False
 			)
 			try:
-				if splitext(basename(i))[0] in txt_files:
-					with open(txt_files[splitext(basename(i))[0]], 'r', encoding='utf-8') as f:
+				if splitext(basename(image))[0] in txt_files:
+					with open(txt_files[splitext(basename(image))[0]], 'r', encoding='utf-8') as f:
 						a = f.read().strip().split('\n')
 						a = [i.strip().split(',') for i in a]
 						a = [list(map(int, i)) for i in a]
@@ -71,7 +74,35 @@ def handle_upload_zipfile(
 							point_list += word.update_points(save=False)
 							word_list.append(word)
 						except Exception as e:
-							print(i)
+							print(image)
+							raise e
+							print(e)
+					page.status = 'segmented'
+				elif splitext(basename(image))[0] in json_files:
+					print(f'Found json file for {image}')
+					with open(json_files[splitext(basename(image))[0]], 'r', encoding='utf-8') as f:
+						a = json.loads(f.read().strip())
+						a = [[
+							i['bounding_box']['x'],
+							i['bounding_box']['y'],
+							i['bounding_box']['w'],
+							i['bounding_box']['h'],
+							i.get('line', 1),
+							# i.get('text', ''),
+						] for i in a.get('words', [])]
+					for i in a:
+						try:
+							word = Word(
+								page=page,
+								x=i[0], y=i[1],
+								w=i[2], h=i[3],
+								line=i[4],
+								# text=i[5],
+							)
+							point_list += word.update_points(save=False)
+							word_list.append(word)
+						except Exception as e:
+							print(image)
 							raise e
 							print(e)
 					page.status = 'segmented'
@@ -84,13 +115,15 @@ def handle_upload_zipfile(
 			failed += 1
 		finally:
 			total += 1
+	print(pages)
+	print(word_list)
 	Page.objects.bulk_create(pages)
 	Word.objects.bulk_create(word_list)
 	Point.objects.bulk_create(point_list)
 	return (total, failed)
 
 
-def download_pages(pages, folder_name, include_gt: bool = False, include_visual: bool = False):
+def download_pages(pages, folder_name, include_gt: bool = False, include_visual: bool = False, use_parent: bool = False):
 	folder_name = folder_name.strip()
 	while ' ' in folder_name:
 		folder_name = folder_name.replace(' ', '_')
@@ -99,7 +132,7 @@ def download_pages(pages, folder_name, include_gt: bool = False, include_visual:
 	tmp = TemporaryDirectory(prefix='download')
 	folder = join(tmp.name, folder_name)
 	os.makedirs(folder)
-	pages.export_all_language(folder, include_gt, include_visual)
+	pages.export_all_language(folder, include_gt, include_visual, use_parent)
 	print('exporting the pages')
 	os.system(f'cd {tmp.name} && zip -r {folder_name}.zip {folder_name} && cd -')
 	return FileResponse(open(f'{folder}.zip', 'rb'))

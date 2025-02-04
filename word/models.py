@@ -69,6 +69,8 @@ class Word(BaseModel):
     h = models.IntegerField(default=0)
     line = models.IntegerField(default=0)
 
+    # text = models.CharField(default='', max_length=100)
+
     status = models.CharField(
         max_length=50,
         choices=STATUS_CHOICES,

@@ -287,6 +287,7 @@ class DownloadView(BaseCoreView, TemplateView):
         status = self.request.POST.get('status', 'segmented')
         include_gt = self.request.POST.get('include_gt') == 'on'
         include_visual = self.request.POST.get('include_visual') == 'on'
+        use_parent = self.request.POST.get('use_parent') == 'on'
         print(status, language, category)
         if status == 'qc_approved':
             pages = Page.objects.filter(qc_status='approved')
@@ -301,7 +302,13 @@ class DownloadView(BaseCoreView, TemplateView):
             self.request,
             f'Downloaded {pages.count()} pages.'
         )
-        return download_pages(pages, f'{category}-{status}', include_gt, include_visual)
+        return download_pages(
+            pages,
+            f'{category}-{status}',
+            include_gt,
+            include_visual,
+            use_parent,
+        )
 
     def get_context_data(self, **kwargs):
         kwargs.update({

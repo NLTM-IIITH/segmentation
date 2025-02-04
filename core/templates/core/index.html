@@ -4,6 +4,10 @@
 {% block custom_js %}
 <!-- Initialize Label Studio -->
 <script>
+  function getSelectedRegion() {
+    return window.Htx.annotationStore.selected.regions.find(x => x.selected);
+  }
+
   function submitLabels(event) {
     console.log('submitting');
     document.dispatchEvent(
@@ -97,6 +101,9 @@
       console.log('Task skipped');
     }
   });
+  window.Htx.on('regionSelected', (region) => {
+    console.log('Selected region: ', region);
+  });
 </script>
 {% endblock %}
 
@@ -111,6 +118,7 @@
     </div>
   </div>
   <div id="label-studio"></div>
+  <div class="row my-2 mx-2 display-5">ID - {{ page.id }}</div>
   <div class="row my-4 mx-2 display-5 border border-primary p-3">
     {{ gt|safe|linebreaks }}
   </div>
